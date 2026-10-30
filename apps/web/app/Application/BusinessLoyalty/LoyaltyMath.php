@@ -45,6 +45,25 @@ final class LoyaltyMath
         if ($points > self::MAX_POINTS) throw new InvalidArgumentException('LOYALTY_POINTS_OUT_OF_RANGE');
         return $points;
     }
+    /** Sum trusted, already-discounted line amounts; exclusions are server-owned product IDs. */
+    public static function eligibleBasketAmount(array $lines, array $excludedProductIds): int
+    {
+        if (!array_is_list($lines) || !array_is_list($excludedProductIds) || count($lines) > 1000 || count($excludedProductIds) > 10000) throw new InvalidArgumentException('LOYALTY_BASKET_INVALID');
+        $excluded = [];
+        foreach ($excludedProductIds as $id) {
+            if (!is_string($id) || $id === '' || strlen($id) > 128) throw new InvalidArgumentException('LOYALTY_PRODUCT_INVALID');
+            $excluded[$id] = true;
+        }
+        $total = 0;
+        foreach ($lines as $line) {
+            if (!is_array($line) || !is_string($line['product_id'] ?? null) || $line['product_id'] === '' || strlen($line['product_id']) > 128 || !is_int($line['net_atomic'] ?? null)) throw new InvalidArgumentException('LOYALTY_LINE_INVALID');
+            self::bounded($line['net_atomic'], self::MAX_AMOUNT);
+            if (isset($excluded[$line['product_id']])) continue;
+            if ($line['net_atomic'] > self::MAX_AMOUNT - $total) throw new InvalidArgumentException('LOYALTY_VALUE_OUT_OF_RANGE');
+            $total += $line['net_atomic'];
+        }
+        return $total;
+    }
     /** A redemption must be fully affordable and cannot exceed the outstanding price. */
     public static function redeemDiscount(int $points, int $balance, int $pointsPerUnit, int $atomicPerUnit, int $outstanding): int
     {
