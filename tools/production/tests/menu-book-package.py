@@ -23,6 +23,6 @@ with tempfile.TemporaryDirectory(prefix='oneqay-menu-package-') as temp:
     assert request['schema_change'] is True and request['file_count']==6300
     for name in ['update.php','database-backup-helper.php','menu-book-migrations.php','menu-vite-assets.php','release-files.sha256','release.manifest.json','release.tar.gz']:
         assert request['sha256'][name]==sha((folder/name).read_bytes())
-    op=(folder/'update.php').read_text();assert '__SOURCE__' not in op and '__PREVIOUS_' not in op and 'ADDITIVE_2_MODULE_MIGRATIONS' in op
+    op=(folder/'update.php').read_text();assert '__SOURCE__' not in op and '__PREVIOUS_' not in op and 'ADDITIVE_3_MODULE_MIGRATIONS' in op
     assert (tmp/'out'/('oneqaydev-menu-release-'+source[:12]+'.zip')).is_file()
     print('MENU_PACKAGE_SYNTHETIC_PASS assertions=11')
