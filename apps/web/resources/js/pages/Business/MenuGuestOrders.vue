@@ -70,6 +70,11 @@ async function loadQuote(){
  }catch(e){quote.value=null;error.value=e instanceof Error?e.message:'ORDER_QUOTE_FAILED';}
  finally{busy.value=false;}
 }
+function onTenderChanged(){
+ priceConfirmed.value=false;settlementOperation='';
+ if(tender.value==='MANUAL_EXTERNAL'&&quote.value)tendered.value=quote.value.total_atomic;
+}
+function onAmountChanged(){priceConfirmed.value=false;settlementOperation='';}
 async function settle(){
  if(!current.value||!quote.value||!priceConfirmed.value||!props.settlement_enabled||busy.value)return;
  if(!/^(0|[1-9][0-9]{0,15})$/.test(tendered.value)){error.value='INVALID_NUMBER';return;}
@@ -113,7 +118,7 @@ async function cancel(){
     <p class="between">{{label('Total saat pemesanan','Original quoted total')}} <strong>{{money(quote.previous_total_atomic)}}</strong></p>
     <p class="between">{{label('Total terkini di POS','Current POS total')}} <strong>{{money(quote.total_atomic)}}</strong></p>
     <p v-if="quote.previous_total_atomic!==quote.total_atomic" class="price-alert">{{label('Harga berubah. Informasikan total baru kepada pelanggan sebelum melanjutkan.','Price has changed. Inform the customer before proceeding.')}}</p>
-    <div class="payment-row"><label>{{label('Metode pembayaran','Payment type')}}<select v-model="tender" @change="priceConfirmed=false;settlementOperation='';if(tender==='MANUAL_EXTERNAL')tendered=quote!.total_atomic"><option value="CASH">{{label('Tunai','Cash')}}</option><option value="MANUAL_EXTERNAL">{{label('Pembayaran eksternal tercatat','Externally recorded payment')}}</option></select></label><label>{{label('Nominal diterima (satuan terkecil)','Amount received (minor units)')}}<input v-model="tendered" type="text" inputmode="numeric" pattern="[0-9]+" maxlength="16" @input="priceConfirmed=false;settlementOperation=''"/></label></div>
+    <div class="payment-row"><label>{{label('Metode pembayaran','Payment type')}}<select v-model="tender" @change="onTenderChanged"><option value="CASH">{{label('Tunai','Cash')}}</option><option value="MANUAL_EXTERNAL">{{label('Pembayaran eksternal tercatat','Externally recorded payment')}}</option></select></label><label>{{label('Nominal diterima (satuan terkecil)','Amount received (minor units)')}}<input v-model="tendered" type="text" inputmode="numeric" pattern="[0-9]+" maxlength="16" @input="onAmountChanged"/></label></div>
     <p class="hint">{{label('Untuk IDR skala 0, isi nominal rupiah biasa. Pembayaran eksternal hanya untuk pembayaran yang sudah diverifikasi secara manual; sistem tidak memproses gateway pembayaran.','For IDR scale 0, enter ordinary rupiah amounts. External payments must already be manually verified; this does not charge a payment gateway.')}}</p>
     <label class="confirmation"><input v-model="priceConfirmed" type="checkbox"/>{{label('Saya sudah mengonfirmasi harga, barang, dan pembayaran dengan pelanggan.','I have confirmed price, items and payment with the customer.')}}</label>
     <button class="primary" type="button" :disabled="busy||!priceConfirmed||!settlement_enabled" @click="settle"><WorkspaceIcon name="check-circle" :size="18"/>{{busy?label('Memproses…','Processing…'):label('Catat pembayaran sekali di POS','Record payment once in POS')}}</button>
