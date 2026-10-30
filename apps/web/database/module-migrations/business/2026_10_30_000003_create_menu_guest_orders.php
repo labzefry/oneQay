@@ -24,6 +24,14 @@ return new class extends Migration {
             $t->char('phone_lookup_hash',64);
             $t->string('table_label',32)->nullable();
             $t->string('status',20);
+            // Cashier settlement is one DB transaction with the canonical sale receipt.
+            $t->char('settlement_operation_hash',64)->nullable();
+            $t->char('settlement_payload_hash',64)->nullable();
+            $t->string('sale_id',32)->nullable();
+            $t->unsignedBigInteger('settled_total_atomic')->nullable();
+            $t->unsignedBigInteger('settled_at')->nullable();
+            $t->char('cancel_operation_hash',64)->nullable();
+            $t->unsignedBigInteger('cancelled_at')->nullable();
             $t->unsignedBigInteger('total_atomic');
             $t->char('currency',3);
             $t->unsignedTinyInteger('currency_scale');
@@ -32,6 +40,9 @@ return new class extends Migration {
             $t->primary(['tenant_id','id'],'pk_menu_guest_orders');
             $t->unique(['tenant_id','outlet_id','operation_hash'],'uq_menu_guest_op');
             $t->unique(['tenant_id','outlet_id','token_hash'],'uq_menu_guest_token');
+            $t->unique(['tenant_id','sale_id'],'uq_menu_guest_sale');
+            $t->foreign(['tenant_id','sale_id'],'fk_menu_guest_sale')
+                ->references(['tenant_id','sale_id'])->on('oneqay_pos_sales')->restrictOnDelete()->restrictOnUpdate();
             $t->index(['tenant_id','outlet_id','phone_lookup_hash','created_at'],'ix_menu_guest_phone');
             $t->foreign(['tenant_id','organization_id'],'fk_menu_guest_org')
                 ->references(['tenant_id','id'])->on('oneqay_organizations')->restrictOnDelete()->restrictOnUpdate();
