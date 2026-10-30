@@ -8,6 +8,7 @@ if (allowed.length !== 7 || new Set(allowed).size !== 7) throw Error('Expected e
 const files = [
   ['resources/js/components/MenuQrCard.vue',true],
   ['resources/js/pages/Business/MenuBook.vue',true],
+  ['resources/js/pages/Business/MenuGuestOrders.vue',true],
   ['resources/js/pages/Website/PublicMenuBook.vue',true],
   ['../../packages/service-pos-ui/ServicePosWorkspace.vue',true],
   ['resources/js/components/BusinessAccountMenu.vue',true],
