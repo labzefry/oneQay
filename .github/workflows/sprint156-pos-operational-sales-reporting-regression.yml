@@ -5,6 +5,25 @@ name: Sprint156 POS Operational Sales Reporting Regression
 on:
   pull_request:
     branches: [main]
+    paths:
+      - '.github/workflows/sprint156-pos-operational-sales-reporting-regression.yml'
+      - 'apps/web/app/Application/Pos/PosOperationalSalesSummary.php'
+      - 'apps/web/app/Application/Pos/PosOperationalSalesSummaryRepository.php'
+      - 'apps/web/app/Application/Pos/ViewPosOperationalSalesSummary.php'
+      - 'apps/web/app/Delivery/Http/Pos/PosOperationalSalesSummaryController.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelPosOperationalSalesSummaryRepository.php'
+      - 'apps/web/app/Providers/PosOperationalReportingServiceProvider.php'
+      - 'apps/web/resources/js/pages/Pos/SalesSummary.vue'
+      - 'apps/web/tests/pos-operational-reporting.php'
+      - 'ops/final-shift-close/STATE.json'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+      - 'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
+      - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/package.json'
+      - 'apps/web/package-lock.json'
+      - 'docs/SPRINT156_*.md'
   workflow_dispatch:
 
 permissions:

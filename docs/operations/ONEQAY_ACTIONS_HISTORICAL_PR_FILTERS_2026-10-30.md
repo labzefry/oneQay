@@ -21,3 +21,10 @@ The active `main-protected-governance` ruleset (ID 20309642) was read on 30 Oct 
 5. Roll back using a normal revert PR if valid FinalShiftClose changes fail to trigger. Never bypass mandatory branch protection.
 
 This PR intentionally does not convert unrelated legacy workflows, disable secret scans, modify payment logic, or deploy to hosting. Further refactoring should be incremental and evidence-driven.
+
+## Second-batch expansion — Sprint 148–168
+A second single-commit change adds `on.pull_request.paths` to 18 more historically broad workflows: Sprint 148, 149, 150, 151, 153 and Sprint 156–168. Sprint 152 and 154 already had path filters, while Sprint 155 is a broader source-contract guard and remains unchanged. All 18 preserve original job identity, test steps, permissions and concurrency; the five durable-runtime workflows also acquire manual `workflow_dispatch`, while POS workflow manual triggers are retained unchanged.
+
+The path selectors are sourced from each workflow's own referenced source, owned tests, route/Vue pages, relevant FinalShiftClose JSON contracts and Sprint docs; shared dependency manifest/lock updates are included, so critical dependency remediation does not silently skip these regressions. No catch-all `apps/web/**` selector was added, because doing so would reproduce the unrelated menu-change load.
+
+**Count:** 32 historical workflows filtered across two changes (14 first batch + 18 second batch); 281 definitions existed in `main` at initial inventory. This is still a controlled partial optimization, not a claim that the backlog or unresolved Symfony Mime CVE is fixed. Re-check required checks and verify YAML on the PR's newest exact head before merging.

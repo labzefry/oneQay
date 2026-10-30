@@ -3,6 +3,25 @@ name: Sprint167 POS Active Shift Performance Workspace Regression
 on:
   pull_request:
     branches: [main]
+    paths:
+      - '.github/workflows/sprint167-pos-active-shift-performance-workspace-regression.yml'
+      - 'apps/web/app/Application/Pos/PosActiveShiftPerformanceWorkspaceRepository.php'
+      - 'apps/web/app/Application/Pos/PosActiveShiftPerformanceWorkspaceSnapshot.php'
+      - 'apps/web/app/Application/Pos/ViewPosActiveShiftPerformanceWorkspace.php'
+      - 'apps/web/app/Delivery/Http/Pos/PosActiveShiftPerformanceWorkspaceController.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelPosActiveShiftPerformanceWorkspaceRepository.php'
+      - 'apps/web/app/Providers/PosActiveShiftPerformanceWorkspaceServiceProvider.php'
+      - 'apps/web/resources/js/pages/Pos/ActiveShiftPerformance.vue'
+      - 'apps/web/tests/pos-active-shift-performance-workspace.php'
+      - 'apps/web/app/Providers/PosOperationsHubServiceProvider.php'
+      - 'apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php'
+      - 'ops/final-shift-close/STATE.json'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/package.json'
+      - 'apps/web/package-lock.json'
+      - 'docs/SPRINT167_*.md'
   workflow_dispatch:
 
 permissions:
