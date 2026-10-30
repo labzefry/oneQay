@@ -76,7 +76,7 @@ final readonly class LaravelMenuGuestOrders
             $seen[$product] = true;
             $lines[] = ['product_id'=>$product,'quantity'=>BusinessInput::integer($line['quantity'],1,99)];
         }
-        $fingerprint = BusinessInput::fingerprint(compact('name','phone','email','table','lines'));
+        $fingerprint = $this->secretHash(BusinessInput::fingerprint(compact('name','phone','email','table','lines')));
         $operationHash = $this->secretHash($operation);
         $this->assertReady();
 
