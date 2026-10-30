@@ -7,12 +7,13 @@ function mbMigrationFiles(): array
     return [
         'business/2026_10_29_000001_create_menu_book_catalog.php',
         'business/2026_10_29_000002_add_menu_book_cover_media.php',
+        'business/2026_10_30_000003_create_menu_guest_orders.php',
     ];
 }
 
 function mbNewTables(): array
 {
-    $tables = ['oneqay_menu_book_categories','oneqay_menu_book_items','oneqay_menu_book_media','oneqay_menu_book_publication'];
+    $tables = ['oneqay_menu_book_categories','oneqay_menu_book_items','oneqay_menu_book_media','oneqay_menu_book_publication','oneqay_menu_guest_orders','oneqay_menu_guest_order_lines'];
     sort($tables);
     return $tables;
 }
@@ -20,7 +21,7 @@ function mbNewTables(): array
 function mbVerifySchema(array $before, array $after): void
 {
     nNeed(count($before['ddl']) === 108 && count($before['receipts']) === 41, 'EXACT_PREDECESSOR_SCHEMA_REQUIRED');
-    nNeed(count($after['ddl']) === 112 && count($after['receipts']) === 43, 'ADDITIVE_SCHEMA_INCOMPLETE');
+    nNeed(count($after['ddl']) === 114 && count($after['receipts']) === 44, 'ADDITIVE_SCHEMA_INCOMPLETE');
     foreach ($before['ddl'] as $name => $hash) {
         nNeed(($after['ddl'][$name] ?? null) === $hash, 'HISTORICAL_SCHEMA_CHANGED');
     }
@@ -33,7 +34,7 @@ function mbVerifySchema(array $before, array $after): void
     nNeed($names === $expected, 'UNEXPECTED_ADDITIVE_MIGRATIONS');
 }
 
-/** Only the pinned two files may be added; all existing migration bytes stay identical. */
+/** Only the pinned three files may be added; all existing migration bytes stay identical. */
 function mbVerifyMigrationSources(string $oldApp, string $candidateApp): void
 {
     foreach (['database/migrations/*.php', 'database/module-migrations/*/*.php'] as $pattern) {
