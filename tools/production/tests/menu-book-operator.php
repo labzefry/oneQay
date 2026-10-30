@@ -6,7 +6,7 @@ $source=file_get_contents(__DIR__.'/../cpanel/update-oneqaydev-menu-book.php');
 file_put_contents($root.'/operator.php',str_replace(['__RUN__','__PREVIOUS_FILE_COUNT__'],['1','6426'],$source));require $root.'/operator.php';
 $n=0;$assert=static function(bool $condition)use(&$n){if(!$condition)throw new RuntimeException('MENU_OPERATOR_ASSERTION_FAILED');$n++;};
 $assert(str_contains($source,"N_OLD_SOURCE='95d9286f4698b168f7c419b67ac3c6583f844910'"));
-$assert(str_contains($source,"'schema_change'=>true")&&str_contains($source,'ADDITIVE_2_MODULE_MIGRATIONS'));
+$assert(str_contains($source,"'schema_change'=>true")&&str_contains($source,'ADDITIVE_3_MODULE_MIGRATIONS'));
 $assert(str_contains($source,"'database-backup-helper.php'")&&str_contains($source,'uPrivateDatabaseBackup'));
 $assert(str_contains($source,'mbApplyMigrations($app,$db,nApp(),$before)')&&str_contains($source,'mbVerifySchema($before,nSchema($db))'));
 $assert(str_contains($source,'menuViteInventory(realpath(nApp().')&&str_contains($source,'VITE_ASSET_HTTP_HASH_FAILED'));
