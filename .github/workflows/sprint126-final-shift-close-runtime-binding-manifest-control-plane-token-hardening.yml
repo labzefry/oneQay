@@ -46,6 +46,11 @@ jobs:
         if: github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009'
         shell: bash
         run: |
+          menu_verified_exclusions=()
+          if [[ "${{ github.event_name }}" == 'pull_request' && "${{ github.event.pull_request.number }}" == '992' && "${{ github.head_ref }}" == 'feature/menu-membership-20261029' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            python3 tools/ci/verify-menu-successor.py --frozen-inputs || exit 1
+            menu_verified_exclusions=(':(exclude)apps/web/bootstrap/app.php' ':(exclude)apps/web/composer.lock' ':(exclude)apps/web/package.json' ':(exclude)apps/web/package-lock.json')
+          fi
           # Exact public website successor; original executable behavior and identity foundations preserved.
           # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
           if [[ "${{ github.head_ref }}" == 'feat/business-workspaces-20261023' && "${{ github.event.pull_request.base.sha }}" == '90a9b298c3b44a4cfa7700a23fc78d1eec0655b2' && "${{ github.event.pull_request.number }}" == '987' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
@@ -172,11 +177,11 @@ jobs:
               esac
             done <<< "$changed_app"
             test "$(grep -Fc 'App\Providers\DurableStagingMerchantCoreRouteBridgeServiceProvider::class' apps/web/bootstrap/providers.php)" -eq 1
-            git diff --quiet "$base" "$head" -- apps/web/app/Providers/AppServiceProvider.php apps/web/routes/web.php apps/web/config/oneqay.php apps/web/database/migrations
+            git diff --quiet "$base" "$head" -- apps/web/app/Providers/AppServiceProvider.php apps/web/routes/web.php apps/web/config/oneqay.php apps/web/database/migrations "${menu_verified_exclusions[@]}"
           elif [[ "${{ github.head_ref }}" == 'enterprise-integrated-business-20261012' && "$base" == 'f3de67cd0426fb13cc51c4d88966a8a9923dcf24' ]]; then
             bash tools/qa-business-management-source-envelope.sh "$base" "$head"
           else
-            git diff --quiet "$base" "$head" -- apps/web/bootstrap/providers.php
+            git diff --quiet "$base" "$head" -- apps/web/bootstrap/providers.php "${menu_verified_exclusions[@]}"
           fi
 
           git diff --quiet "$base" "$head" -- \
@@ -188,7 +193,7 @@ jobs:
             apps/web/app/Application/Pos/FinalShiftCloseRuntimeBindingManifestMaterializer.php \
             apps/web/app/Infrastructure/Pos/FilesystemFinalShiftCloseRuntimeBindingManifestWriter.php \
             apps/web/config/oneqay.php \
-            apps/web/database/migrations
+            apps/web/database/migrations "${menu_verified_exclusions[@]}"
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" =~ ^(NOT_EXECUTED|EXECUTED)$ ]]
           permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"; [[ "$permission_state" =~ ^(NONE|PROVISIONED)$ ]]; if [[ "$permission_state" == 'PROVISIONED' ]]; then [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]; fi
           [[ "$(jq -r '.feature_activation.state' ops/final-shift-close/STATE.json)" =~ ^(INACTIVE|ACTIVE)$ ]]

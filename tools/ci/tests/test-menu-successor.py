@@ -41,4 +41,17 @@ try:m.verify_migrations('a'*40)
 except ValueError as error:
     assert str(error)=='MENU_BASE_MIGRATION_COUNT_INVALID';n+=1
 else:raise AssertionError('WRONG_MIGRATION_COUNT_ACCEPTED')
+# Approved successor inputs must match both the committed tree and working copy.
+def pinned_output(args, text):
+    path=args[-1].split(':',1)[-1] if args[1]=='rev-parse' else args[-1]
+    return m.FROZEN_INPUTS[path]+'\n'
+m.subprocess.check_output=pinned_output
+m.verify_frozen_inputs('a'*40);n+=1
+for changed_command in ['rev-parse','hash-object']:
+    def changed_output(args,text):
+        return '0'*40 if args[1]==changed_command else pinned_output(args,text)
+    m.subprocess.check_output=changed_output
+    try:m.verify_frozen_inputs('a'*40)
+    except ValueError:n+=1
+    else:raise AssertionError('MODIFIED_FROZEN_INPUT_ACCEPTED')
 print('MENU_SUCCESSOR_ENVELOPE_PASS assertions='+str(n))
