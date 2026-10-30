@@ -9,7 +9,7 @@ final readonly class PublicMenuBookController {
  public function __construct(private LaravelMenuBookReader $reader){}
  public function show(Request $request):mixed {
   $scope=$this->scope($request);$view=$this->reader->read($scope,true);abort_unless($view!==null,404);
-  return Inertia::render('Website/PublicMenuBook',$view+['preview'=>false])->toResponse($request)->withHeaders(['Cache-Control'=>'no-store, private','X-Robots-Tag'=>'noindex']);
+  return Inertia::render('Website/PublicMenuBook',$view+['preview'=>false,'ordering_enabled'=>(bool)config('oneqay.menu_guest_ordering.enabled',false)&&\Illuminate\Support\Facades\Route::has('menu.public.order')])->toResponse($request)->withHeaders(['Cache-Control'=>'no-store, private','X-Robots-Tag'=>'noindex']);
  }
  private function scope(Request $request):array {
   abort_unless(config('platform.business_domains_enabled')===true,404);$business=$request->attributes->get('oneqay.host_business');
