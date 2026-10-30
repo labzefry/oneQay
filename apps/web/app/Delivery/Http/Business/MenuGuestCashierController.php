@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace App\Delivery\Http\Business;
 
 use App\Application\Authorization\DurableAuthorizationViolation;
-use App\Application\Business\{BusinessInput,BusinessViolation};
+use App\Application\Business\{BusinessAccess,BusinessInput,BusinessViolation};
 use App\Application\Pos\PosTransactionViolation;
 use App\Delivery\Http\SafeErrorEnvelope;
 use App\Infrastructure\Business\{LaravelMenuGuestOrders,LaravelMenuGuestCheckout};
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Throwable;
 
 final readonly class MenuGuestCashierController
 {
     public function __construct(
         private LaravelMenuGuestOrders $orders,
         private LaravelMenuGuestCheckout $checkout,
+        private BusinessAccess $access,
     ) {}
 
     private function correlation(Request $r): string
@@ -55,8 +55,8 @@ final readonly class MenuGuestCashierController
     public function page(Request $r):mixed
     {
         return $this->respond($r,function() {
-            // Refuse to render customer-contact workflows without durable cashier permission.
-            $this->orders->findByPhone('+628123456789');
+            // Authorization is checked before rendering, not via a synthetic customer lookup.
+            $this->access->require('pos.sale.complete');
             return Inertia::render('Business/MenuGuestOrders',[
                 'settlement_enabled'=>(bool)config('oneqay.pos_sale_completion.enabled',false),
             ]);
