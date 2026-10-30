@@ -118,6 +118,11 @@ return [
         ),
     ],
 
+    // Guest QR ordering and cashier settlement are disabled until schema/host certification.
+    'menu_guest_ordering' => [
+        'enabled' => filter_var(env('ONEQAY_MENU_GUEST_ORDERING_ENABLED', false), FILTER_VALIDATE_BOOL),
+    ],
+
     'system_update' => [
         // Backend control-plane visibility/checking may only be enabled explicitly.
         'control_plane_enabled' => filter_var(
