@@ -24,7 +24,7 @@ mbVerifyMigrationSources($oldFixture,$candidateFixture);$assert(true,'exact addi
 $injected=$candidateFixture.'/database/module-migrations/platform/9999_unapproved.php';file_put_contents($injected,'<?php');try{mbVerifyMigrationSources($oldFixture,$candidateFixture);$assert(false,'unapproved source accepted');}catch(RuntimeException){$assert(true,'unapproved migration source rejected');}unlink($injected);
 $historical=glob($candidateFixture.'/database/migrations/*.php')[0];file_put_contents($historical,"\n// changed",FILE_APPEND);try{mbVerifyMigrationSources($oldFixture,$candidateFixture);$assert(false,'historical source change accepted');}catch(RuntimeException){$assert(true,'historical migration byte changes rejected');}
 $after=mbApplyMigrations($app,$db,$repo.'/apps/web',$before);
-$assert(count($after['ddl'])===112&&count($after['receipts'])===43,'only two migrations add exactly four menu tables');
+$assert(count($after['ddl'])===114&&count($after['receipts'])===44,'only three migrations add exactly six menu and guest order tables');
 $assert(mbApplyMigrations($app,$db,$repo.'/apps/web',$before)===$after,'complete migration replay is idempotent');
 $bad=$after;$bad['ddl'][array_key_first($before['ddl'])]='tampered';try{mbVerifySchema($before,$bad);$assert(false,'historical DDL alteration accepted');}catch(RuntimeException){$assert(true,'historical DDL alteration rejected');}
 $partial=$after;unset($partial['ddl']['oneqay_menu_book_media']);try{mbVerifySchema($before,$partial);$assert(false,'partial DDL accepted');}catch(RuntimeException){$assert(true,'partial DDL requires forward review');}
