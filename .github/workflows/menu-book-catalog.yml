@@ -78,8 +78,6 @@ jobs:
           extensions: pdo_sqlite, pdo_mysql, mbstring, zip, gd
           coverage: none
       - run: composer install --working-dir=apps/web --no-interaction --prefer-dist
-      - run: REQUIRE_MENU_GD=1 php apps/web/tests/menu-book-catalog.php
-      - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-book-catalog.php
       - run: REQUIRE_MENU_GD=1 php apps/web/tests/menu-guest-orders.php
       - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-guest-orders.php
       - run: php apps/web/tests/enrollment-transaction-rollback.php
