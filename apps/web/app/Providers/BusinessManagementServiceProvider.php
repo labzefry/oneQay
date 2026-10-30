@@ -24,6 +24,15 @@ final class BusinessManagementServiceProvider extends ServiceProvider
         $this->app->scoped(\App\Application\Business\WorkforceManagement::class,fn($a)=>new \App\Application\Business\WorkforceManagement($a->make(BusinessRepository::class),$a->make(\App\Application\Business\WorkforceAccounts::class)));
         $this->app->scoped(\App\Application\Pos\ShiftClosureWorkspaceRepository::class, fn ($app) => new \App\Infrastructure\Pos\LaravelShiftClosureWorkspaceRepository($app->make('db')->connection()));
         $this->app->bind(\App\Application\Business\BusinessDocuments::class, \App\Infrastructure\Business\BusinessDocumentCodec::class);
+        // Explicit DB connection binding; cashier and guest ordering never use unscoped container injection.
+        $this->app->scoped(\App\Infrastructure\Business\LaravelMenuGuestOrders::class,
+            fn ($app) => new \App\Infrastructure\Business\LaravelMenuGuestOrders(
+                $app->make('db')->connection(), $app->make('encrypter'),
+                $app->make(\App\Application\Business\BusinessAccess::class)));
+        $this->app->scoped(\App\Infrastructure\Business\LaravelMenuGuestCheckout::class,
+            fn ($app) => new \App\Infrastructure\Business\LaravelMenuGuestCheckout(
+                $app->make('db')->connection(), $app->make(\App\Application\Business\BusinessAccess::class),
+                $app->make(\App\Application\Pos\CompleteSale::class)));
         $this->app->scoped(\App\Infrastructure\Business\LaravelMenuBookMedia::class, fn ($app) => new \App\Infrastructure\Business\LaravelMenuBookMedia($app->make('db')->connection(), $app->make(\App\Application\Business\BusinessAccess::class), $app->make(BusinessRepository::class)));
         $this->app->scoped(\App\Application\Business\MenuBookAssignments::class, fn ($app) => $app->make(\App\Infrastructure\Business\LaravelMenuBookCatalog::class));
         $this->app->scoped(\App\Infrastructure\Business\LaravelMenuBookCatalog::class, fn ($app) => new \App\Infrastructure\Business\LaravelMenuBookCatalog($app->make('db')->connection(), $app->make(\App\Application\Business\BusinessAccess::class), $app->make(BusinessRepository::class), $app->make(\App\Application\Business\MerchandisingRepository::class)));
@@ -44,9 +53,24 @@ final class BusinessManagementServiceProvider extends ServiceProvider
 
         Route::get('/menu/media/{id}', [\App\Delivery\Http\Business\PublicMenuBookController::class, 'cover'])->where('id','[a-f0-9]{32}')->middleware(['web','throttle:60,1']);
         Route::get('/menu', [\App\Delivery\Http\Business\PublicMenuBookController::class, 'show'])->middleware(['web','throttle:60,1'])->name('menu.public');
+        // Feature intentionally defaults OFF until the third additive migration and operator are qualified.
+        if ((bool) config('oneqay.menu_guest_ordering.enabled', false)) {
+            Route::post('/menu/orders', \App\Delivery\Http\Business\PublicMenuGuestOrderController::class)
+                ->middleware(['web','throttle:5,1','throttle:30,60'])->name('menu.public.order');
+        }
+
 
         Route::middleware(['web', 'session.active', 'throttle:60,1', RequirePosSessionContextMiddleware::class])->group(static function (): void {
             $menu=\App\Delivery\Http\Business\MenuBookController::class;
+            if ((bool) config('oneqay.menu_guest_ordering.enabled', false)) {
+                $orders=\App\Delivery\Http\Business\MenuGuestCashierController::class;
+                Route::get('/pos/business/menu-orders',[$orders,'page'])->name('business.menu-orders');
+                Route::get('/pos/business/menu-orders/lookup',[$orders,'lookup'])->middleware('throttle:20,1');
+                Route::post('/pos/business/menu-orders/quote',[$orders,'quote'])->middleware('throttle:20,1');
+                Route::post('/pos/business/menu-orders/settle',[$orders,'settle'])->middleware('throttle:5,1');
+                Route::post('/pos/business/menu-orders/cancel',[$orders,'cancel'])->middleware('throttle:10,1');
+            }
+
             Route::get('/pos/business/menu-book',[$menu,'show'])->name('business.menu-book');
             Route::get('/pos/business/menu-book/preview',[$menu,'preview'])->name('business.menu-book.preview');
             Route::post('/pos/business/menu-book/media/remove',[$menu,'removeMedia'])->middleware('throttle:10,1');
