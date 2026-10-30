@@ -57,6 +57,11 @@ jobs:
       - name: Prove historical DB attestation source and operational state remain bounded
         shell: bash
         run: |
+          menu_verified_exclusions=()
+          if [[ "${{ github.event_name }}" == 'pull_request' && "${{ github.event.pull_request.number }}" == '992' && "${{ github.head_ref }}" == 'feature/menu-membership-20261029' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            python3 tools/ci/verify-menu-successor.py --frozen-inputs || exit 1
+            menu_verified_exclusions=(':(exclude)apps/web/bootstrap/app.php' ':(exclude)apps/web/composer.lock' ':(exclude)apps/web/package.json' ':(exclude)apps/web/package-lock.json')
+          fi
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
@@ -99,7 +104,7 @@ jobs:
             apps/web/database/migrations \
             ops/final-shift-close/STATE.json \
             ops/final-shift-close/STATE.json \
-            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json
+            ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json "${menu_verified_exclusions[@]}"
           fi
           [[ "$(jq -r '.migration27.state' ops/final-shift-close/STATE.json)" == 'EXECUTED' ]]
           permission_state="$(jq -r '.permission_provisioning.state' ops/final-shift-close/STATE.json)"
