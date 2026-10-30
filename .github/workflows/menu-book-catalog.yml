@@ -3,6 +3,8 @@ name: Menu book catalog integration
 on:
   pull_request:
     paths:
+      - 'apps/web/app/Application/BusinessLoyalty/LoyaltyLots.php'
+      - 'apps/web/tests/loyalty-lots.php'
       - 'apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php'
       - 'apps/web/tests/enrollment-transaction-rollback.php'
       - 'apps/web/app/Infrastructure/Business/LaravelMenuBookCatalog.php'
@@ -78,6 +80,7 @@ jobs:
       - run: php apps/web/tests/enrollment-transaction-rollback.php
       - run: bash tools/ci/run-historical-fixture.sh s28
       - run: php apps/web/tests/loyalty-math.php
+      - run: php apps/web/tests/loyalty-lots.php
       - run: php apps/web/tests/mime-header-security.php
       - run: php tools/production/tests/menu-book-migrations.php
       - run: php tools/production/tests/menu-vite-assets.php
