@@ -17,6 +17,11 @@ on:
       - 'apps/web/app/Infrastructure/Business/LaravelMenuGuestOrders.php'
       - 'apps/web/app/Infrastructure/Business/LaravelMenuGuestCheckout.php'
       - 'apps/web/tests/menu-guest-checkout.php'
+      - 'apps/web/app/Delivery/Http/Business/PublicMenuGuestOrderController.php'
+      - 'apps/web/app/Delivery/Http/Business/MenuGuestCashierController.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/resources/js/pages/Business/MenuGuestOrders.vue'
+      - 'apps/web/tests/menu-guest-http.php'
       - 'apps/web/database/module-migrations/business/2026_10_30_000003_create_menu_guest_orders.php'
       - 'apps/web/tests/menu-guest-orders.php'
       - 'apps/web/database/module-migrations/business/2026_10_29_000002_add_menu_book_cover_media.php'
@@ -80,8 +85,8 @@ jobs:
           extensions: pdo_sqlite, pdo_mysql, mbstring, zip, gd
           coverage: none
       - run: composer install --working-dir=apps/web --no-interaction --prefer-dist
-      - run: REQUIRE_MENU_GD=1 php apps/web/tests/menu-guest-checkout.php
-      - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-guest-checkout.php
+      - run: REQUIRE_MENU_GD=1 php apps/web/tests/menu-guest-http.php
+      - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-guest-http.php
       - run: php apps/web/tests/enrollment-transaction-rollback.php
       - run: bash tools/ci/run-historical-fixture.sh s28
       - run: php apps/web/tests/loyalty-math.php
