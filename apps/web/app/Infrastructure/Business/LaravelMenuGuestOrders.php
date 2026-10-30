@@ -41,7 +41,7 @@ final readonly class LaravelMenuGuestOrders
         return $phone;
     }
 
-    private function secretHash(string $text): string
+    private function keyedDigest(string $text): string
     {
         return hash_hmac('sha256',$text,$this->cipher->getKey());
     }
@@ -76,8 +76,8 @@ final readonly class LaravelMenuGuestOrders
             $seen[$product] = true;
             $lines[] = ['product_id'=>$product,'quantity'=>BusinessInput::integer($line['quantity'],1,99)];
         }
-        $fingerprint = $this->secretHash(BusinessInput::fingerprint(compact('name','phone','email','table','lines')));
-        $operationHash = $this->secretHash($operation);
+        $fingerprint = $this->keyedDigest(BusinessInput::fingerprint(compact('name','phone','email','table','lines')));
+        $operationHash = $this->keyedDigest($operation);
         $this->assertReady();
 
         return $this->db->transaction(function () use ($scope,$name,$phone,$email,$table,$lines,$fingerprint,$operationHash): array {
@@ -149,11 +149,11 @@ final readonly class LaravelMenuGuestOrders
             $orderId = bin2hex(random_bytes(16));
             $record = $scope + [
                 'id'=>$orderId,'operation_hash'=>$operationHash,'payload_fingerprint'=>$fingerprint,
-                'token_hash'=>$this->secretHash($token),'token_ciphertext'=>$this->cipher->encryptString($token),
+                'token_hash'=>$this->keyedDigest($token),'token_ciphertext'=>$this->cipher->encryptString($token),
                 'name_ciphertext'=>$this->cipher->encryptString($name),
                 'phone_ciphertext'=>$this->cipher->encryptString($phone),
                 'email_ciphertext'=>$this->cipher->encryptString($email),
-                'phone_lookup_hash'=>$this->secretHash($phone),
+                'phone_lookup_hash'=>$this->keyedDigest($phone),
                 'table_label'=>$table === '' ? null : $table,
                 'status'=>'pending','total_atomic'=>$total,'currency'=>$currency,
                 'currency_scale'=>$scale,'created_at'=>$created,
@@ -192,7 +192,7 @@ final readonly class LaravelMenuGuestOrders
         $scope=$this->cashierScope();
         if (!preg_match('/\A[a-f0-9]{64}\z/D',$token)) return null;
         $order=$this->db->table('oneqay_menu_guest_orders')->where($scope)
-            ->where('token_hash',$this->secretHash($token))->where('status','pending')
+            ->where('token_hash',$this->keyedDigest($token))->where('status','pending')
             ->where('token_expires_at','>',time())->first();
         return $order?$this->cashierView($order):null;
     }
@@ -203,7 +203,7 @@ final readonly class LaravelMenuGuestOrders
         $scope=$this->cashierScope();
         $number=$this->phone($phone);
         $rows=$this->db->table('oneqay_menu_guest_orders')->where($scope)
-            ->where('phone_lookup_hash',$this->secretHash($number))->where('status','pending')
+            ->where('phone_lookup_hash',$this->keyedDigest($number))->where('status','pending')
             ->where('created_at','>=',time()-self::PHONE_SEARCH_TTL)
             ->orderByDesc('created_at')->orderBy('id')->limit(10)->get();
         return $rows->map(fn($row)=>$this->cashierView($row))->all();
