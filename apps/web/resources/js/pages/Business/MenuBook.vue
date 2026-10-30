@@ -9,7 +9,7 @@ import WorkspaceIcon from '../../components/WorkspaceIcon.vue';
 import MenuQrCard from '../../components/MenuQrCard.vue';
 type Product = { product_id:string; display_name:string; unit_price_atomic:string; currency:string; currency_scale:number; active:boolean };
 type Item = { category_id:string; visible:boolean; spotlight:boolean; version:number };
-const props=defineProps<{products:{data:Product[];page:number;has_more:boolean;total:number};categories:{id:string;name:string}[];items:Record<string,Item>;filters:{q:string};preferences:CurrencyPreferences;media:{items:{id:string;bytes:number;in_use:boolean}[];used_bytes:number;quota_bytes:number};publication:{title:string;description:string;cover_id:string|null;published:boolean;version:number}}>();
+const props=defineProps<{products:{data:Product[];page:number;has_more:boolean;total:number};categories:{id:string;name:string}[];items:Record<string,Item>;filters:{q:string};preferences:CurrencyPreferences;media:{items:{id:string;bytes:number;in_use:boolean}[];used_bytes:number;quota_bytes:number};publication:{title:string;description:string;cover_id:string|null;published:boolean;version:number};guest_ordering_enabled?:boolean}>();
 const page=usePage<{business_profile?:{url?:string|null}|null}>();
 const menuUrl=computed(()=>page.props.business_profile?.url ? page.props.business_profile.url.replace(/\/$/,'')+'/menu' : null);
 const id=computed(()=>locale.value==='id');
@@ -82,6 +82,7 @@ async function removeImage(imageId:string){
   <p>{{label('Simpan draft dan lihat pratinjau sebelum menerbitkan. Harga dan status aktif produk selalu mengikuti katalog terkini.','Save the draft and preview it before publishing. Prices and active status always follow the current catalog.')}}</p><p><a href="/pos/business/menu-book/preview" target="_blank" rel="noopener">{{label('Lihat pratinjau buku menu','Preview menu book')}}</a></p>
 
   <MenuQrCard :business-url="page.props.business_profile?.url ?? null" :published="publication.published"/>
+  <p v-if="props.guest_ordering_enabled"><a href="/pos/business/menu-orders"><WorkspaceIcon name="shopping-basket" :size="18" /> {{label('Buka pesanan QR di kasir','Open cashier QR orders')}}</a></p>
   <section class="menu-card cover-editor" :aria-busy="uploadBusy">
    <div><p class="menu-eyebrow">{{label('IDENTITAS MENU','MENU IDENTITY')}}</p><h2>{{label('Cover buku menu','Menu book cover')}}</h2><p>{{label('Pilih foto milik bisnis Anda. Gambar hanya terlihat oleh pelanggan setelah menu diterbitkan.','Choose your business photo. Customers see it only after you publish the menu.')}}</p>
     <label class="cover-upload">{{label('Unggah cover','Upload cover')}}<input type="file" accept="image/jpeg,image/png,image/webp" :disabled="uploadBusy||busy||uncertain" @change="uploadCover"/></label>
