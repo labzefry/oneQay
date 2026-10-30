@@ -57,7 +57,7 @@ final readonly class LaravelMenuGuestOrders
     public function submit(array $verifiedHostBusiness, array $input): array
     {
         $scope = $this->hostScope($verifiedHostBusiness);
-        BusinessInput::fields($input,['operation_id','identity_mode','customer_name','phone','email','table_label','lines']);
+        BusinessInput::fields($input,['operation_id','identity_mode','customer_name','phone','email','lines'],['table_label']);
         if ($input['identity_mode'] !== 'guest') throw new BusinessViolation('MEMBERSHIP_AUTH_REQUIRED',403);
         $operation = $input['operation_id'];
         if (!is_string($operation) || !preg_match('/\A[a-f0-9]{32}\z/D',$operation)) throw new BusinessViolation('MENU_OPERATION_ID_INVALID');
@@ -65,7 +65,7 @@ final readonly class LaravelMenuGuestOrders
         $phone = $this->phone($input['phone']);
         $email = mb_strtolower(BusinessInput::text($input['email'],254),'UTF-8');
         if (filter_var($email,FILTER_VALIDATE_EMAIL) === false) throw new BusinessViolation('EMAIL_INVALID');
-        $table = BusinessInput::text($input['table_label'],32,true);
+        $table = BusinessInput::text($input['table_label'] ?? '',32,true);
         if (preg_match('/[\x00-\x1F\x7F]/',$table)) throw new BusinessViolation('TABLE_LABEL_INVALID');
         $requested = BusinessInput::rows($input['lines'],50);
         $lines = []; $seen = [];
