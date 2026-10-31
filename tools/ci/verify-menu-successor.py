@@ -37,7 +37,7 @@ def verify_migrations(head):
         '0000_00_00_000013_create_first_party_session_authority.php']:
         subprocess.run(['git','cat-file','-e',BASE+':apps/web/database/migrations/'+name],check=True)
 
-FROZEN_INPUTS = {'apps/web/bootstrap/app.php': '8e885c996e5068fe0ed44ba87a15c37f7bfc28f7', 'apps/web/composer.lock': '6b23b04e541f1a012520ffd2df330450d97e19ee', 'apps/web/package.json': '3a867ab285a5be6844c9a207b43beda440b8bbdf', 'apps/web/package-lock.json': '8b249a57ad32ead84f8efca77ea90d52b1c95e01'}
+FROZEN_INPUTS = {'apps/web/bootstrap/app.php': '8e885c996e5068fe0ed44ba87a15c37f7bfc28f7', 'apps/web/composer.lock': '6b23b04e541f1a012520ffd2df330450d97e19ee', 'apps/web/package.json': '3a867ab285a5be6844c9a207b43beda440b8bbdf', 'apps/web/package-lock.json': '8ad96ea3c21e75c333732cf1a6db49ed8cbfe7b0'}
 def verify_frozen_inputs(head):
     for path, expected in FROZEN_INPUTS.items():
         actual=subprocess.check_output(['git','rev-parse',head+':'+path],text=True).strip()
