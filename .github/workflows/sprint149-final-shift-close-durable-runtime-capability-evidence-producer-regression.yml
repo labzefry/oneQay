@@ -5,6 +5,20 @@ name: Sprint149 Final Shift Close Durable Runtime Capability Evidence Producer R
 on:
   pull_request:
     branches: [main]
+    paths:
+      - '.github/workflows/sprint149-final-shift-close-durable-runtime-capability-evidence-producer-regression.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidenceProducer.php'
+      - 'apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-producer.php'
+      - 'ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_PRODUCER_CONTRACT.json'
+      - 'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
+      - 'ops/final-shift-close/STATE.json'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntime*.php'
+      - 'docs/SPRINT149_*.md'
+  workflow_dispatch:
 
 permissions:
   contents: read

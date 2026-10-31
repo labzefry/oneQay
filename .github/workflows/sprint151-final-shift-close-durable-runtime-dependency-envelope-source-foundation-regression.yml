@@ -5,6 +5,19 @@ name: Sprint151 Final Shift Close Durable Runtime Dependency Envelope Source Fou
 on:
   pull_request:
     branches: [main]
+    paths:
+      - '.github/workflows/sprint151-final-shift-close-durable-runtime-dependency-envelope-source-foundation-regression.yml'
+      - 'ops/final-shift-close/DURABLE_RUNTIME_DEPENDENCY_ENVELOPE_SOURCE_FOUNDATION_CONTRACT.json'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeDependencyEnvelopeEvidenceProducer.php'
+      - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+      - 'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
+      - 'ops/final-shift-close/STATE.json'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntime*.php'
+      - 'docs/SPRINT151_*.md'
+  workflow_dispatch:
 
 permissions:
   contents: read

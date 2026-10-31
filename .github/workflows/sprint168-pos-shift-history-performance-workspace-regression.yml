@@ -3,6 +3,25 @@ name: Sprint168 POS Shift History Performance Workspace Regression
 on:
   pull_request:
     branches: [main]
+    paths:
+      - '.github/workflows/sprint168-pos-shift-history-performance-workspace-regression.yml'
+      - 'apps/web/app/Application/Pos/PosShiftHistoryPerformanceWorkspaceRepository.php'
+      - 'apps/web/app/Application/Pos/PosShiftHistoryPerformanceWorkspaceSnapshot.php'
+      - 'apps/web/app/Application/Pos/ViewPosShiftHistoryPerformanceWorkspace.php'
+      - 'apps/web/app/Delivery/Http/Pos/PosShiftHistoryPerformanceWorkspaceController.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelPosShiftHistoryPerformanceWorkspaceRepository.php'
+      - 'apps/web/app/Providers/PosShiftHistoryPerformanceWorkspaceServiceProvider.php'
+      - 'apps/web/resources/js/pages/Pos/ShiftHistoryPerformance.vue'
+      - 'apps/web/tests/pos-shift-history-performance-workspace.php'
+      - 'apps/web/app/Providers/PosOperationsHubServiceProvider.php'
+      - 'apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php'
+      - 'ops/final-shift-close/STATE.json'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/package.json'
+      - 'apps/web/package-lock.json'
+      - 'docs/SPRINT168_*.md'
   workflow_dispatch:
 
 permissions:

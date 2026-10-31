@@ -42,6 +42,7 @@ on:
       - 'apps/web/resources/js/components/MenuQrCard.vue'
       - 'apps/web/package.json'
       - 'apps/web/package-lock.json'
+      - 'tools/production/cpanel/inspect-oneqaydev-menu-predecessor.php'
       - 'tools/production/cpanel/menu-book-migrations.php'
       - 'tools/production/tests/menu-book-migrations.php'
       - 'tools/production/cpanel/menu-vite-assets.php'
@@ -52,6 +53,8 @@ on:
       - 'tools/production/tests/menu-book-package.py'
       - 'tools/production/tests/menu-deploy-rehearsal.php'
       - 'apps/web/tests/platform-control-mail.php'
+      - 'docs/operations/ONEQAYDEV_MENU_RELEASE_HANDOFF_2026-10-31.md'
+      - 'docs/operations/ONEQAY_ACTIONS_HISTORICAL_PR_FILTERS_2026-10-30.md'
       - 'tools/ci/verify-menu-successor.py'
       - 'tools/ci/tests/test-menu-successor.py'
       - 'apps/web/tests/initial-password-enrollment-current.php'
@@ -92,6 +95,7 @@ jobs:
       - run: php apps/web/tests/loyalty-math.php
       - run: php apps/web/tests/loyalty-lots.php
       - run: php apps/web/tests/mime-header-security.php
+      - run: php -l tools/production/cpanel/inspect-oneqaydev-menu-predecessor.php
       - run: php tools/production/tests/menu-book-migrations.php
       - run: php tools/production/tests/menu-vite-assets.php
       - run: php tools/production/tests/menu-book-operator.php

@@ -6,6 +6,20 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/sprint137-final-shift-close-canonical-control-plane-authenticated-http-fail-closed-regression.yml'
+      - '.github/workflows/sprint136-final-shift-close-canonical-control-plane-authenticated-http-positive-path-regression.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Providers/FinalShiftClose*.php'
+      - 'apps/web/routes/final-shift-close-*.php'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-*.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_*.json'
+      - 'docs/SPRINT137_FINAL_SHIFT_CLOSE_*.md'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-authenticated-http-fail-closed-regression.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTHENTICATED_HTTP_FAIL_CLOSED_REGRESSION_CONTRACT.json'
+  workflow_dispatch:
 
 permissions:
   contents: read
