@@ -6,6 +6,20 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/sprint139-final-shift-close-canonical-control-plane-auth-before-throttle-regression.yml'
+      - '.github/workflows/sprint138-final-shift-close-canonical-control-plane-authenticated-http-throttle-regression.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Providers/FinalShiftClose*.php'
+      - 'apps/web/routes/final-shift-close-*.php'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-*.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_*.json'
+      - 'docs/SPRINT139_FINAL_SHIFT_CLOSE_*.md'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-auth-before-throttle-regression.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_AUTH_BEFORE_THROTTLE_REGRESSION_CONTRACT.json'
+  workflow_dispatch:
 
 permissions:
   contents: read

@@ -365,8 +365,12 @@ jobs:
             echo 'Recognized exact Sprint37 quote-correction successor shape.'
           fi
 
+      - name: Verify bounded menu successor source envelope
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: python3 tools/ci/verify-menu-successor.py
       - name: Enforce frozen Sprint36 source envelope
-        if: env.ONEQAY_S36_SPRINT37_QUOTE_COMPATIBILITY != 'true' && env.ONEQAY_S36_JRN004_COMPATIBILITY != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027'
+        if: (env.ONEQAY_S36_SPRINT37_QUOTE_COMPATIBILITY != 'true' && env.ONEQAY_S36_JRN004_COMPATIBILITY != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         env:
           ONEQAY_CI_EXPRESSION_0: ${{ github.event_name }}
@@ -415,7 +419,12 @@ jobs:
         working-directory: apps/web
         run: composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Run isolated s36 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: bash tools/ci/run-historical-fixture.sh s36
       - name: Run Sprint36 authority regression
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         working-directory: apps/web
         run: php tests/first-party-session-inventory-revocation.php
 

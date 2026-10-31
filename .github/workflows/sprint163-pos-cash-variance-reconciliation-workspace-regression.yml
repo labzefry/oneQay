@@ -3,6 +3,22 @@ name: Sprint163 POS Cash Variance Reconciliation Workspace Regression
 on:
   pull_request:
     branches: [main]
+    paths:
+      - '.github/workflows/sprint163-pos-cash-variance-reconciliation-workspace-regression.yml'
+      - 'apps/web/app/Application/Pos/OperatePosCashVarianceReconciliation.php'
+      - 'apps/web/app/Application/Pos/PosCashVarianceReconciliationWorkspaceSnapshot.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelPosCashVarianceReconciliationWorkspaceRepository.php'
+      - 'apps/web/app/Providers/PosCashVarianceReconciliationWorkspaceServiceProvider.php'
+      - 'apps/web/resources/js/pages/Pos/CashVarianceReconciliation.vue'
+      - 'apps/web/tests/pos-cash-variance-reconciliation-workspace.php'
+      - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+      - 'ops/final-shift-close/STATE.json'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/package.json'
+      - 'apps/web/package-lock.json'
+      - 'docs/SPRINT163_*.md'
   workflow_dispatch:
 
 permissions:

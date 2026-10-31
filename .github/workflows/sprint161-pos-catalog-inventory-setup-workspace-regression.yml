@@ -4,6 +4,28 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/sprint161-pos-catalog-inventory-setup-workspace-regression.yml'
+      - 'apps/web/app/Application/Pos/PosCatalogInventorySetupWorkspaceRepository.php'
+      - 'apps/web/app/Application/Pos/PosCatalogInventorySetupWorkspaceSnapshot.php'
+      - 'apps/web/app/Application/Pos/ViewPosCatalogInventorySetupWorkspace.php'
+      - 'apps/web/app/Delivery/Http/Pos/PosCatalogInventorySetupWorkspaceController.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelPosCatalogInventorySetupWorkspaceRepository.php'
+      - 'apps/web/app/Providers/PosCatalogInventorySetupWorkspaceServiceProvider.php'
+      - 'apps/web/resources/js/pages/Pos/CatalogInventorySetup.vue'
+      - 'apps/web/tests/pos-catalog-inventory-setup-workspace.php'
+      - 'apps/web/app/Application/Pos/PrepareCatalogItem.php'
+      - 'apps/web/app/Application/Pos/EstablishInventoryBaseline.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelCatalogPreparationRepository.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelInventoryBaselineRepository.php'
+      - 'ops/final-shift-close/STATE.json'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+      - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/package.json'
+      - 'apps/web/package-lock.json'
+      - 'docs/SPRINT161_*.md'
   workflow_dispatch:
 
 permissions:

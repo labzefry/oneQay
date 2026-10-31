@@ -1,3 +1,13 @@
+## 2026-10-29 — Menu media lifecycle and MIME patch (PR #992 draft)
+
+Adds a bounded gallery, selection and audited deletion of unused cover images, protecting both saved draft and publication references. Menu page transitions respect reduced motion. Patches symfony/mime v7.4.19 to v7.4.22 for CVE-2026-45070 without changing other locked packages. Local GD SQLite361, MIME26, application regression, Vue type-check/build and palette checks pass; Composer/web/desktop npm audits report no advisories. Exact new-head CI, visual QA, remaining feature scope and additive cPanel qualification are pending. Not merged/deployed. [Evidence and remaining work](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
+
+## 2026-10-29 — Menu-book cover draft (PR #992, not deployed)
+
+Adds a private raster cover upload, owner draft preview and explicit publication on the verified business subdomain. Uploads are scoped to tenant/organization/outlet, decoded and re-encoded with GD, limited to 3 MiB/4,000 pixels per side/8 MP and 20 MiB stored bytes per outlet. Only the cover selected in the published snapshot is publicly readable. Client feedback is bounded to 30 seconds; duplicate images are deduplicated, with safe error codes.
+
+A second additive business-module migration creates private media and a nullable cover reference. No live migration has run. Source validation and hosting/device acceptance remain distinct. QR/table ordering, product photos/templates, discount checkout, membership ledger/rewards, marketing, Windows integration and security remediation remain unfinished. See [implementation contract and evidence](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
+
 ## 2026-10-29 — Actual95d deployment and create-only legacy domain repair
 
 Hosting95d and worker are verified; predecessor privately archived. One legacy active profile lacks any domain history. A versioned, source-bound, owner-granted create-only maintenance repair preserves accounts, type, MFA, credentials and permissions, with scoped preimage, transactional mail/audit and durable replay. Repair application and real-device acceptance remain separate. See [live evidence and repair contract](docs/operations/LEGACY_DOMAIN_REPAIR_2026-10-29.md).
@@ -191,3 +201,7 @@ Implemented server-wide filtered/paginated service search and industry operation
 
 ### 28 October 2026 — workspace release and owner text colors
 Shared web/Windows theme enforces Black Onyx on white and white on colored surfaces. Windows candidate bumped to 0.2.6 with updater identity unchanged. Prepared no-schema cPanel successor with verified archive retention; source-only historical envelope skips are limited to this product branch and oversized workflow scripts were extracted with runtime assertions retained. See `docs/INDUSTRY_WORKSPACE_REFERENCE_2026-10-27.md` for delivered scope and remaining advanced features.
+
+## 2026-10-30 — MFA input and CI test reliability (draft)
+
+First-party MFA requests now preserve submitted code/token whitespace for strict validation. The PR adds isolated current-compatible authentication/session regressions with mandatory success markers after discovering legacy CI false-green output. Six tests passed locally on a disposable earlier development snapshot; exact-head CI, independent security review and deployment remain pending. See [menu and deployment checkpoint](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md). No hosting changes have been performed.

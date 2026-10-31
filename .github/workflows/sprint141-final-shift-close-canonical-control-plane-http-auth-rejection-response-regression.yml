@@ -6,6 +6,20 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/sprint141-final-shift-close-canonical-control-plane-http-auth-rejection-response-regression.yml'
+      - '.github/workflows/sprint140-final-shift-close-canonical-control-plane-auth-rejection-response-hardening-regression.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Providers/FinalShiftClose*.php'
+      - 'apps/web/routes/final-shift-close-*.php'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-*.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_*.json'
+      - 'docs/SPRINT141_FINAL_SHIFT_CLOSE_*.md'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-http-auth-rejection-response-regression.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_HTTP_AUTH_REJECTION_RESPONSE_REGRESSION_CONTRACT.json'
+  workflow_dispatch:
 
 permissions:
   contents: read

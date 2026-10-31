@@ -7,7 +7,7 @@ use App\Domain\Pos\{ProductId,Money};
 use InvalidArgumentException;
 // Author by Lab | zefry. Import preview is read-only; commit is one scoped transaction.
 final readonly class Merchandising {
-    public function __construct(private MerchandisingRepository $catalog,private BusinessRepository $operations,private BusinessAccess $access,private PrepareCatalogItem $prepare,private EstablishInventoryBaseline $baseline) {}
+    public function __construct(private MerchandisingRepository $catalog,private BusinessRepository $operations,private BusinessAccess $access,private PrepareCatalogItem $prepare,private EstablishInventoryBaseline $baseline,private ?MenuBookAssignments $menuBook=null) {}
     public function preferences():array {
         $s=$this->access->context();$v=$this->catalog->settings($s);
         return array_intersect_key($v,array_flip(['business_name','currency','symbol','scale','version']));
@@ -62,13 +62,16 @@ final readonly class Merchandising {
     public function saveProduct(string $operation,array $data,string $correlation):array {
         $s=$this->access->require('pos.catalog.prepare');BusinessInput::text($operation,80);
         return $this->operations->once($s,$operation,'product.save',$data,$correlation,function()use($s,$operation,$data,$correlation):array {
+            $menuCategory=$data['menu_category_id']??null;unset($data['menu_category_id']);
             $id=ProductId::fromString((string)($data['product_id']??strtolower((string)($data['sku']??''))))->value();$old=$this->catalog->product($s,$id,true);
+            if($menuCategory!==null&&($old||!$this->menuBook))throw new BusinessViolation('MENU_CATEGORY_CONFIGURATION_UNAVAILABLE',409);
             if($old&&!isset($data['version']))throw new BusinessViolation('PRODUCT_ALREADY_EXISTS');
             $settings=$old?['currency'=>$old['currency'],'scale'=>$old['currency_scale']]:$this->preferences();$data['stock_mode']??=$old['stock_mode']??'tracked';$v=$this->normalize($data,$settings);
             if($old&&$v['stock_mode']!==$old['stock_mode'])$this->access->require('pos.inventory.baseline');
             if(!$old)$this->access->require('pos.inventory.baseline');
             if($old&&$v['opening_quantity']!==0)throw new BusinessViolation('OPENING_STOCK_ALREADY_ESTABLISHED');
             $this->write($s,$v,$operation,$correlation,$v['version']??null,!$old);
+            if($menuCategory!==null)$this->menuBook->assign('menu:'.hash('sha256',$operation),['product_id'=>$id,'category_id'=>$menuCategory,'visible'=>true,'spotlight'=>false,'version'=>0],$correlation);
             return $this->catalog->product($s,$id)??throw new BusinessViolation('PRODUCT_NOT_FOUND');
         });
     }

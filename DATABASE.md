@@ -560,3 +560,7 @@ Dokumen ini tidak mengotorisasi physical schema, SQL, DDL, executable migrations
 ## 2026-10-21 — Mail delivery, category creation and stock policy
 
 Stage 1 source changes: independent SMTP/NOC worker phases; live owner delivery reports and safe SMTP error guidance; automatic 72-hour email log retention protecting active queues/dedupe; tenant/outlet category creation; explicit tracked/unlimited stock through canonical sale/void, web and offline desktop 0.2.1. Two additive module migrations require a separately qualified deployment. Hosting remains c2e (PR #974); deployment is deferred per Product Owner. [Implementation, schema, compatibility and validation](docs/implementation/MAIL_CATALOG_STOCK_20261021.md). Author by Lab | zefry.
+
+## 2026-10-29 — Menu cover persistence (source draft)
+
+Migration 2026_10_29_000002_add_menu_book_cover_media creates scoped private media with normalized digest/MIME/size/base64 payload and adds nullable publication.cover_id. Public reads require the published snapshot reference. Settings reset removes publication before media. Both new menu migrations remain unapplied to hosting; down is non-destructive and requires forward repair. See [menu contract](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).

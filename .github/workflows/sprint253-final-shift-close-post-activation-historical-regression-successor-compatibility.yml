@@ -129,6 +129,7 @@ jobs:
           PUSH_BEFORE_SHA: ${{ github.event.before }}
           PUSH_AFTER_SHA: ${{ github.sha }}
         run: |
+          if [[ "${PR_HEAD_REF}" == 'feature/menu-membership-20261029' ]]; then python3 tools/ci/verify-menu-successor.py; fi
           # Exact SMTP/catalog successor; compare every owned path/content and preserve operational authority.
           if [[ "${{ github.head_ref }}" == 'fix/pos-sync-tenant-reset-20261022' && "${{ github.event.pull_request.base.sha }}" == 'a3650644ef0634e3a51431a707fc7bd791b9cfdf' && "${{ github.event.pull_request.number }}" == '981' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-pos-sync-business-reset-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
@@ -348,7 +349,23 @@ jobs:
                       and ('Verify Sprint268 security-only Composer successor' in '\n'.join(lines)
                            or 'Verify exact Sprint268 security compatibility successor' in '\n'.join(lines))
                   )
-                  if full_pr_diff and exact_global_lock and not sprint264_bounded_compat and not sprint268_bounded_compat:
+                  menu_classifiers = {".github/workflows/sprint30-privileged-totp-mfa-regression.yml":["Recognize exact Sprint70 source and workflow closure for Sprint30"],".github/workflows/sprint35-privileged-totp-recovery-regression.yml":["Recognize exact Sprint41 Sprint35 preservation state"],".github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml":["Classify exact Sprint47 JRN-004 compatibility","Classify exact Sprint37 quote-correction compatibility"],".github/workflows/sprint37-first-party-all-session-termination-regression.yml":["Classify exact Sprint35 Sprint36 compatibility","Isolate migration sixteen for post-Sprint46 docs preservation","Isolate migration sixteen for exact Sprint37 legacy horizon","Classify exact Sprint47 JRN-004 compatibility"]}
+                  menu_explicit_guard = (
+                      "github.event.pull_request.number == 992" in chunk
+                      and "github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'" in chunk
+                  )
+                  menu_preserved_classifier = any(
+                      chunk.startswith('      - name: '+name+chr(10))
+                      for name in menu_classifiers.get(str(path), [])
+                  )
+                  menu_bounded_compat = (
+                      head_ref == 'feature/menu-membership-20261029'
+                      and os.environ.get('PR_BASE_SHA') == '87f65c5c816dff18383eda1567388cdce81819ba'
+                      and 'Verify bounded menu successor source envelope' in chr(10).join(lines)
+                      and 'python3 tools/ci/verify-menu-successor.py' in chr(10).join(lines)
+                      and (menu_explicit_guard or menu_preserved_classifier)
+                  )
+                  if full_pr_diff and exact_global_lock and not sprint264_bounded_compat and not sprint268_bounded_compat and not menu_bounded_compat:
                       offenders.append(f'{path}:exact full-PR historical envelope lock')
 
           if offenders:

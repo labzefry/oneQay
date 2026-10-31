@@ -356,8 +356,12 @@ jobs:
           echo 'ONEQAY_SPRINT36_SUCCESSOR=true' >> "$GITHUB_ENV"
           echo 'SPRINT268_APPROVED_APP_SOURCE_BOUNDARY=PASS'
 
+      - name: Verify bounded menu successor source envelope
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: python3 tools/ci/verify-menu-successor.py
       - name: Enforce exact Sprint 31 source envelope
-        if: ((((github.event_name == 'pull_request' && env.ONEQAY_SPRINT32_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true' && !(github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
+        if: (((((github.event_name == 'pull_request' && env.ONEQAY_SPRINT32_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true' && !(github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         run: |
           # Exact public website successor; original executable behavior and identity foundations preserved.
@@ -478,7 +482,7 @@ jobs:
           grep -Fq 'ONEQAY_SPRINT31_SUCCESSOR=true' .github/workflows/sprint30-privileged-totp-mfa-regression.yml
 
       - name: Enforce NO_SCHEMA_CHANGE and canonical migrations
-        if: (((env.ONEQAY_SPRINT32_SUCCESSOR != 'true' && !(github.event_name == 'pull_request' && github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
+        if: ((((env.ONEQAY_SPRINT32_SUCCESSOR != 'true' && !(github.event_name == 'pull_request' && github.head_ref == 'sprint268-security-dependency-remediation' && github.event.pull_request.number == 926)) && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         run: |
           # Exact public website successor; original executable behavior and identity foundations preserved.
@@ -723,6 +727,11 @@ jobs:
           grep -Fq '$session->regenerateToken();' "$controller"
           grep -Fq 'FirstPartySessionKeys::MFA_VERIFIED_AT' "$controller"
           if [[ "${ONEQAY_SPRINT36_SUCCESSOR:-false}" == 'true' || "${{ github.head_ref }}" == 'production-merchant-commercial-go-live-integrated-20261009' ]]; then
+            grep -Fq "private const POLICY_SCOPE = 'policy_administration'" "$controller"
+            grep -Fq "private const SESSION_CONTROL_SCOPE = 'session_control'" "$controller"
+          elif [[ "${{ github.event_name }}" == 'pull_request' && "${{ github.event.pull_request.number }}" == '992' && "${{ github.head_ref }}" == 'feature/menu-membership-20261029' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            python3 tools/ci/verify-menu-successor.py || exit 1
+            git diff --exit-code "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" -- "$controller"
             grep -Fq "private const POLICY_SCOPE = 'policy_administration'" "$controller"
             grep -Fq "private const SESSION_CONTROL_SCOPE = 'session_control'" "$controller"
           else

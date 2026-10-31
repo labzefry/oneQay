@@ -7,13 +7,13 @@ use Illuminate\Database\Connection;
 use Illuminate\Contracts\Encryption\Encrypter;
 final readonly class ControlPlaneBusinessReset {
  private const GROUPS=[
-  'transactions'=>['oneqay_pos_shift_close_evidence','oneqay_pos_cash_variance_review_decision_evidence','oneqay_pos_cash_variance_explanation_evidence','oneqay_pos_shift_closing_cash_evidence','oneqay_pos_shift_opening_cash_evidence','oneqay_pos_sale_cash_refunds','oneqay_pos_sale_voids','oneqay_pos_sale_events','oneqay_pos_sale_lines','oneqay_pos_sales','oneqay_pos_shifts','oneqay_desktop_operations','oneqay_desktop_events','oneqay_pos_shift_recoveries'],
-  'products'=>['oneqay_business_product_profiles','oneqay_business_product_categories','oneqay_pos_inventory_replenishments','oneqay_pos_inventory_baselines','oneqay_pos_sale_catalog_items','oneqay_pos_catalog_preparation_journal'],
+  'transactions'=>['oneqay_menu_guest_order_lines','oneqay_menu_guest_orders','oneqay_pos_shift_close_evidence','oneqay_pos_cash_variance_review_decision_evidence','oneqay_pos_cash_variance_explanation_evidence','oneqay_pos_shift_closing_cash_evidence','oneqay_pos_shift_opening_cash_evidence','oneqay_pos_sale_cash_refunds','oneqay_pos_sale_voids','oneqay_pos_sale_events','oneqay_pos_sale_lines','oneqay_pos_sales','oneqay_pos_shifts','oneqay_desktop_operations','oneqay_desktop_events','oneqay_pos_shift_recoveries'],
+  'products'=>['oneqay_menu_book_publication','oneqay_menu_book_items','oneqay_menu_book_categories','oneqay_business_product_profiles','oneqay_business_product_categories','oneqay_pos_inventory_replenishments','oneqay_pos_inventory_baselines','oneqay_pos_sale_catalog_items','oneqay_pos_catalog_preparation_journal'],
   'inventory'=>['oneqay_pos_inventory_replenishments','oneqay_pos_inventory_baselines'],
   'finance'=>['oneqay_business_settlements','oneqay_business_invoices','oneqay_business_receipts','oneqay_business_purchases','oneqay_business_journals'],
   'partners'=>['oneqay_business_interactions','oneqay_business_partners'],
   'people'=>['oneqay_business_attendance','oneqay_business_leave','oneqay_business_staff_accounts','oneqay_business_employees','oneqay_business_job_titles'],
-  'settings'=>['oneqay_desktop_preferences','oneqay_business_settings'],
+  'settings'=>['oneqay_menu_book_publication','oneqay_menu_book_media','oneqay_desktop_preferences','oneqay_business_settings'],
  ];
  public function __construct(private Connection $db,private Encrypter $cipher){}
  private function tables(string $scope):array {
@@ -42,6 +42,7 @@ final readonly class ControlPlaneBusinessReset {
   if($business['status']==='suspended'&&(int)$business['updated_at']>time()-60)$blocked[]='RESET_WAIT_FOR_REQUESTS_TO_DRAIN';
   if($this->db->table('oneqay_pos_shifts')->where('tenant_id',$tenant)->where('active_slot',1)->exists())$blocked[]='RESET_CLOSE_OR_RECOVER_ACTIVE_SHIFTS';
   foreach(['laundry','boarding','homestay']as$module){if($this->db->getSchemaBuilder()->hasTable('oneqay_'.$module.'_shifts')&&$this->db->table('oneqay_'.$module.'_shifts')->where('tenant_id',$tenant)->where('active_slot',1)->exists())$blocked[]='RESET_CLOSE_OR_RECOVER_ACTIVE_SHIFTS';if($scope==='products'&&$this->db->getSchemaBuilder()->hasTable('oneqay_'.$module.'_orders')&&$this->db->table('oneqay_'.$module.'_orders')->where('tenant_id',$tenant)->exists())$blocked[]='RESET_TRANSACTIONS_DEPEND_ON_SERVICE_RESOURCES';}
+  if(in_array($scope,['products','settings'],true)&&$this->db->getSchemaBuilder()->hasTable('oneqay_menu_guest_orders')&&$this->db->table('oneqay_menu_guest_orders')->where('tenant_id',$tenant)->where('status','pending')->exists())$blocked[]='RESET_PENDING_MENU_ORDERS_REQUIRE_RESOLUTION';
   if($scope==='partners'&&$this->db->getSchemaBuilder()->hasTable('oneqay_business_purchases')&&($this->db->table('oneqay_business_purchases')->where('tenant_id',$tenant)->exists()||$this->db->table('oneqay_business_invoices')->where('tenant_id',$tenant)->exists()))$blocked[]='RESET_FINANCE_DEPENDS_ON_PARTNERS';
   $state=['business_id'=>$business['id'],'tenant_id'=>$tenant,'version'=>(int)$business['version'],'scope'=>$scope,'entries'=>$entries,'data_digest'=>hash_final($hash),'blocked'=>$blocked];
   return $state+['review_digest'=>hash('sha256',json_encode($state,JSON_THROW_ON_ERROR)),'preserved'=>['business account','identities and credentials','RBAC and TOTP','platform audit and reset receipts','SMTP and website configuration'],'offline_action'=>'Stop all registers and reconcile or export local queues before reset. Old leases are invalidated; local queues are never deleted.'];

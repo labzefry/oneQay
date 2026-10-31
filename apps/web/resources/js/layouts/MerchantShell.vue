@@ -24,6 +24,7 @@ let generation = 0;
 let request: AbortController | null = null;
 const labels: Record<string, { title: string; icon: string }> = {
     business_products: { title: 'Products', icon: 'package' },
+    'business_menu-book': { title: 'Menu book', icon: 'book-open' },
     business_reports: { title: 'Reports', icon: 'chart-column' },
     business_settings: { title: 'Business settings', icon: 'settings' },
     catalog_inventory: { title: 'Catalog & opening stock', icon: 'package' },
@@ -61,7 +62,7 @@ const categories = [
 ];
 const categoryFor = (item: Destination): string => {
     const key = item.key;
-    if (['business_products','catalog_inventory','inventory_accountability','inventory_replenishment'].includes(key)) return 'CATALOG';
+    if (['business_products','business_menu-book','catalog_inventory','inventory_accountability','inventory_replenishment'].includes(key)) return 'CATALOG';
     if (['business_purchases','business_suppliers'].includes(key)) return 'PURCHASE';
     if (['business_customers','business_people'].includes(key)) return 'PEOPLE';
     if (key === 'business_finance') return 'FINANCE';
@@ -75,7 +76,7 @@ const categoryFor = (item: Destination): string => {
 const businessType = computed(() => String((page.props.business_profile as any)?.business_type ?? 'retail'));
 const businessTypeLabel = computed(() => ({laundry: 'Laundry', boarding: locale.value === 'id' ? 'Kosan' : 'Boarding', homestay: 'Homestay', food: locale.value === 'id' ? 'Makanan & minuman' : 'Food & beverage', retail: locale.value === 'id' ? 'Ritel' : 'Retail'} as Record<string,string>)[businessType.value] ?? (locale.value === 'id' ? 'Usaha' : 'Business'));
 const titles: Record<string, string> = {
-    ServicePos: 'Business workspace', OwnerSecurity: 'Account & security', DesktopSettings: 'POS Windows', Products: 'Products', Settings: 'Business settings', Reports: 'Reports', Workspace: 'Business management', OperationsHub: 'Business overview', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',
+    MenuBook: 'Menu book', ServicePos: 'Business workspace', OwnerSecurity: 'Account & security', DesktopSettings: 'POS Windows', Products: 'Products', Settings: 'Business settings', Reports: 'Reports', Workspace: 'Business management', OperationsHub: 'Business overview', Cashier: 'Cashier', CatalogInventorySetup: 'Catalog & stock',
     ShiftStart: 'Start shift', ShiftClose: 'Close shift', InventoryReplenishment: 'Receive stock',
     InventoryAccountability: 'Inventory overview', SalesSummary: 'Sales overview',
     ActiveShiftPerformance: 'Current shift', ShiftHistoryPerformance: 'Shift history',

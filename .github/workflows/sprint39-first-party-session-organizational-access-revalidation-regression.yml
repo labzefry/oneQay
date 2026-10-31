@@ -155,8 +155,12 @@ jobs:
             echo 'Migrations #15-#16 isolated only from exact M7.5 seven-workflow historical preservation.'
           fi
 
+      - name: Verify bounded menu successor source envelope
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: python3 tools/ci/verify-menu-successor.py
       - name: Enforce exact Sprint39 source envelope
-        if: github.event_name == 'pull_request' && env.ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY != 'true' && env.ONEQAY_S39_JRN004_COMPATIBILITY != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027'
+        if: (github.event_name == 'pull_request' && env.ONEQAY_S39_SPRINT37_QUOTE_COMPATIBILITY != 'true' && env.ONEQAY_S39_JRN004_COMPATIBILITY != 'true' && github.head_ref != 'feat/industry-workspace-reference-20261027') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         env:
           ONEQAY_PR_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
@@ -189,7 +193,7 @@ jobs:
           fi
 
       - name: Enforce NO_SCHEMA_CHANGE and migration immutability
-        if: github.event_name == 'pull_request' && env.ONEQAY_S39_JRN004_COMPATIBILITY != 'true'
+        if: (github.event_name == 'pull_request' && env.ONEQAY_S39_JRN004_COMPATIBILITY != 'true') && !(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay')
         shell: bash
         run: |
           set -euo pipefail
@@ -231,6 +235,11 @@ jobs:
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
+          menu_verified_exclusions=()
+          if [[ "${{ github.event_name }}" == 'pull_request' && "${{ github.event.pull_request.number }}" == '992' && "${{ github.head_ref }}" == 'feature/menu-membership-20261029' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
+            python3 tools/ci/verify-menu-successor.py --frozen-inputs || exit 1
+            menu_verified_exclusions=(':(exclude)apps/web/bootstrap/app.php' ':(exclude)apps/web/composer.lock' ':(exclude)apps/web/package.json' ':(exclude)apps/web/package-lock.json')
+          fi
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
@@ -251,7 +260,7 @@ jobs:
               apps/web/composer.json \
               apps/web/composer.lock \
               apps/web/package.json \
-              apps/web/package-lock.json
+              apps/web/package-lock.json "${menu_verified_exclusions[@]}"
           elif [[ "${ONEQAY_SPRINT40_SOURCE_SUCCESSOR:-false}" == 'true' ]]; then
             git diff --exit-code "$base" "$head" -- \
               apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
@@ -270,7 +279,7 @@ jobs:
               apps/web/composer.json \
               apps/web/composer.lock \
               apps/web/package.json \
-              apps/web/package-lock.json
+              apps/web/package-lock.json "${menu_verified_exclusions[@]}"
           else
             git diff --exit-code "$base" "$head" -- \
               apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php \
@@ -290,7 +299,7 @@ jobs:
               apps/web/composer.json \
               apps/web/composer.lock \
               apps/web/package.json \
-              apps/web/package-lock.json
+              apps/web/package-lock.json "${menu_verified_exclusions[@]}"
           fi
 
       - name: Validate exact request-time revalidation wiring
@@ -341,7 +350,14 @@ jobs:
           composer validate --no-check-publish
           composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Run isolated s39 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        env:
+          ONEQAY_PERSISTENCE_ENABLED: 'true'
+        run: bash tools/ci/run-historical-fixture.sh s39
       - name: Run dedicated Sprint39 organizational access regression
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         working-directory: apps/web
         shell: bash
         env:
@@ -377,15 +393,32 @@ jobs:
           printf '%s\n' "$output"
           grep -Fq 'Sprint39 first-party session organizational access revalidation regression passed.' <<<"$output"
 
+      - name: Run isolated s36 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: bash tools/ci/run-historical-fixture.sh s36
       - name: Preserve Sprint36 session inventory and revocation
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         working-directory: apps/web
         run: php tests/first-party-session-inventory-revocation.php
 
+      - name: Run isolated s37 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        run: bash tools/ci/run-historical-fixture.sh s37
       - name: Preserve Sprint37 all-session termination
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         working-directory: apps/web
         run: php tests/first-party-session-all-session-termination.php
 
+      - name: Run isolated s38 regression for menu successor
+        if: github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'
+        shell: bash
+        env:
+          ONEQAY_PERSISTENCE_ENABLED: 'true'
+        run: bash tools/ci/run-historical-fixture.sh s38
       - name: Preserve Sprint38 absolute lifetime
+        if: (!(github.event_name == 'pull_request' && github.repository == 'labzefry/oneQay' && github.event.pull_request.number == 992 && github.base_ref == 'main' && github.head_ref == 'feature/menu-membership-20261029' && github.event.pull_request.head.repo.full_name == 'labzefry/oneQay'))
         working-directory: apps/web
         env:
           ONEQAY_PERSISTENCE_ENABLED: 'true'

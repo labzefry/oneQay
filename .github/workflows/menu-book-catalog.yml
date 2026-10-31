@@ -1,0 +1,119 @@
+# Author by Lab | zefry. Synthetic databases only.
+name: Menu book catalog integration
+on:
+  pull_request:
+    paths:
+      - 'apps/web/app/Application/BusinessLoyalty/LoyaltyLots.php'
+      - 'apps/web/tests/loyalty-lots.php'
+      - 'apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php'
+      - 'apps/web/tests/enrollment-transaction-rollback.php'
+      - 'apps/web/app/Infrastructure/Business/LaravelMenuBookCatalog.php'
+      - 'apps/web/app/Application/Business/MenuBookAssignments.php'
+      - 'apps/web/app/Application/Business/Merchandising.php'
+      - 'apps/web/app/Delivery/Http/Business/MerchandisingController.php'
+      - 'apps/web/resources/js/pages/Business/Products.vue'
+      - 'apps/web/app/Infrastructure/Business/LaravelMenuBookReader.php'
+      - 'apps/web/app/Infrastructure/Business/LaravelMenuBookMedia.php'
+      - 'apps/web/app/Infrastructure/Business/LaravelMenuGuestOrders.php'
+      - 'apps/web/app/Infrastructure/Business/LaravelMenuGuestCheckout.php'
+      - 'apps/web/tests/menu-guest-checkout.php'
+      - 'apps/web/app/Delivery/Http/Business/PublicMenuGuestOrderController.php'
+      - 'apps/web/app/Delivery/Http/Business/MenuGuestCashierController.php'
+      - 'apps/web/config/oneqay.php'
+      - 'apps/web/resources/js/pages/Business/MenuGuestOrders.vue'
+      - 'apps/web/tests/menu-guest-http.php'
+      - 'apps/web/database/module-migrations/business/2026_10_30_000003_create_menu_guest_orders.php'
+      - 'apps/web/tests/menu-guest-orders.php'
+      - 'apps/web/database/module-migrations/business/2026_10_29_000002_add_menu_book_cover_media.php'
+      - 'apps/web/app/Delivery/Http/Business/MenuBookController.php'
+      - 'apps/web/app/Delivery/Http/Business/PublicMenuBookController.php'
+      - 'apps/web/resources/js/pages/Website/PublicMenuBook.vue'
+      - 'apps/web/app/Application/Business/BusinessAccess.php'
+      - 'apps/web/app/Providers/BusinessManagementServiceProvider.php'
+      - 'apps/web/resources/js/pages/Business/MenuBook.vue'
+      - 'apps/web/resources/js/layouts/MerchantShell.vue'
+      - 'apps/web/app/Infrastructure/Platform/ControlPlaneBusinessReset.php'
+      - 'apps/web/database/module-migrations/business/2026_10_29_000001_create_menu_book_catalog.php'
+      - 'apps/web/tests/menu-book-catalog.php'
+      - 'apps/web/tests/menu-book-media.php'
+      - 'apps/web/tests/mime-header-security.php'
+      - 'apps/web/composer.lock'
+      - 'apps/web/scripts/check-ui-palette.mjs'
+      - 'apps/web/resources/js/components/MenuQrCard.vue'
+      - 'apps/web/package.json'
+      - 'apps/web/package-lock.json'
+      - 'tools/production/cpanel/inspect-oneqaydev-menu-predecessor.php'
+      - 'tools/production/cpanel/menu-book-migrations.php'
+      - 'tools/production/tests/menu-book-migrations.php'
+      - 'tools/production/cpanel/menu-vite-assets.php'
+      - 'tools/production/tests/menu-vite-assets.php'
+      - 'tools/production/cpanel/update-oneqaydev-menu-book.php'
+      - 'tools/production/package-oneqaydev-menu-book.py'
+      - 'tools/production/tests/menu-book-operator.php'
+      - 'tools/production/tests/menu-book-package.py'
+      - 'tools/production/tests/menu-deploy-rehearsal.php'
+      - 'apps/web/tests/platform-control-mail.php'
+      - 'docs/operations/ONEQAYDEV_MENU_RELEASE_HANDOFF_2026-10-31.md'
+      - 'docs/operations/ONEQAY_ACTIONS_HISTORICAL_PR_FILTERS_2026-10-30.md'
+      - 'tools/ci/verify-menu-successor.py'
+      - 'tools/ci/tests/test-menu-successor.py'
+      - 'apps/web/tests/initial-password-enrollment-current.php'
+      - 'tools/ci/run-historical-fixture.sh'
+      - 'tools/ci/tests/test-historical-fixture.py'
+      - 'apps/web/app/Delivery/Http/Business/MenuImageResponse.php'
+      - '.github/workflows/menu-book-catalog.yml'
+permissions:
+  contents: read
+concurrency:
+  group: menu-book-catalog-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  menu-book-catalog:
+    runs-on: ubuntu-24.04
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: synthetic-test-only
+          MYSQL_DATABASE: oneqay_platform_test
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psynthetic-test-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240
+        with:
+          php-version: '8.3'
+          extensions: pdo_sqlite, pdo_mysql, mbstring, zip, gd
+          coverage: none
+      - run: composer install --working-dir=apps/web --no-interaction --prefer-dist
+      - run: REQUIRE_MENU_GD=1 php apps/web/tests/menu-guest-http.php
+      - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-guest-http.php
+      - run: php apps/web/tests/enrollment-transaction-rollback.php
+      - run: bash tools/ci/run-historical-fixture.sh s28
+      - run: php apps/web/tests/loyalty-math.php
+      - run: php apps/web/tests/loyalty-lots.php
+      - run: php apps/web/tests/mime-header-security.php
+      - run: php -l tools/production/cpanel/inspect-oneqaydev-menu-predecessor.php
+      - run: php tools/production/tests/menu-book-migrations.php
+      - run: php tools/production/tests/menu-vite-assets.php
+      - run: php tools/production/tests/menu-book-operator.php
+      - run: python tools/ci/tests/test-menu-successor.py
+      - run: python tools/ci/tests/test-historical-fixture.py
+      - run: php tools/production/tests/menu-deploy-rehearsal.php
+      - run: PLATFORM_TEST_ENGINE=mysql php tools/production/tests/menu-deploy-rehearsal.php
+      - run: python -m py_compile tools/production/package-oneqaydev-menu-book.py
+      - run: python tools/production/tests/menu-book-package.py
+      - run: composer audit --working-dir=apps/web --locked --format=plain
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - run: npm ci --ignore-scripts --no-fund
+        working-directory: apps/web
+      - run: npm run check:ui-palette
+        working-directory: apps/web
+      - run: npm run type-check
+        working-directory: apps/web
+      - run: npm run build
+        working-directory: apps/web

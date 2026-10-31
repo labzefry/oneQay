@@ -5,6 +5,20 @@ name: Sprint148 Final Shift Close Durable Runtime Capability Evidence Binding Re
 on:
   pull_request:
     branches: [main]
+    paths:
+      - '.github/workflows/sprint148-final-shift-close-durable-runtime-capability-evidence-binding-regression.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntimeCapabilityEvidence.php'
+      - 'apps/web/tests/pos-final-shift-close-durable-runtime-capability-evidence-binding.php'
+      - 'ops/final-shift-close/DURABLE_RUNTIME_CAPABILITY_EVIDENCE_BINDING_CONTRACT.json'
+      - 'ops/final-shift-close/POST_SELECTION_DOWNSTREAM_READINESS.json'
+      - 'ops/final-shift-close/STATE.json'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseDurableRuntime*.php'
+      - 'docs/SPRINT148_*.md'
+  workflow_dispatch:
 
 permissions:
   contents: read

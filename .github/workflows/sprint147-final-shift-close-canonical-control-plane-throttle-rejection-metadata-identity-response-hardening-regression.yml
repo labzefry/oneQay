@@ -6,6 +6,20 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/sprint147-final-shift-close-canonical-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.yml'
+      - '.github/workflows/sprint146-final-shift-close-canonical-control-plane-throttle-budget-identity-response-hardening-regression.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Providers/FinalShiftClose*.php'
+      - 'apps/web/routes/final-shift-close-*.php'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-*.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_*.json'
+      - 'docs/SPRINT147_FINAL_SHIFT_CLOSE_*.md'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-throttle-rejection-metadata-identity-response-hardening-regression.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_THROTTLE_REJECTION_METADATA_IDENTITY_RESPONSE_HARDENING_REGRESSION_CONTRACT.json'
+  workflow_dispatch:
 
 permissions:
   contents: read

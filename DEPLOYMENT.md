@@ -814,3 +814,7 @@ Attribution: Lab | zefry
 ## 2026-10-28 — Business domain / updater successor
 
 See [split-root configuration, reserved hostnames, trust boundary and actual-asset publication](docs/operations/BUSINESS_DOMAIN_UPDATER_2026-10-28.md). Existing tenant data, host-only cookies, central login and installed signing trust must remain unchanged. Domain activation requires separate DNS, routing and TLS verification; source tests alone do not prove hosting or installed-device acceptance.
+
+## 2026-10-29 — Menu media deployment prerequisite (source draft)
+
+PR #992 needs a backup-first additive successor for both menu migrations; do not use the prior source-only operator. Qualify private DB packet/storage capacity, GD JPEG/PNG/WebP in CLI/web PHP, upload_max_filesize >=3M and post_max_size >3M. Verify private/public tenant cover boundaries. Rollback preserves additive tables. No deployment is claimed. See [menu contract](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).

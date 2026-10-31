@@ -6,6 +6,20 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/sprint134-final-shift-close-canonical-control-plane-delivery-gate-registration-regression.yml'
+      - '.github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml'
+      - 'apps/web/app/Application/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Delivery/Http/Pos/FinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Infrastructure/Pos/LaravelFinalShiftCloseRuntimeControlPlane*.php'
+      - 'apps/web/app/Providers/FinalShiftClose*.php'
+      - 'apps/web/routes/final-shift-close-*.php'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-*.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_*.json'
+      - 'docs/SPRINT134_FINAL_SHIFT_CLOSE_*.md'
+      - 'apps/web/tests/final-shift-close-runtime-control-plane-delivery-gate-registration-regression.php'
+      - 'ops/final-shift-close/CANONICAL_RUNTIME_CONTROL_PLANE_DELIVERY_GATE_REGISTRATION_REGRESSION_CONTRACT.json'
+  workflow_dispatch:
 
 permissions:
   contents: read

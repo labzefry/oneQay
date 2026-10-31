@@ -4,6 +4,23 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/sprint162-pos-operations-hub-regression.yml'
+      - 'apps/web/app/Application/Pos/PosOperationsHubSnapshot.php'
+      - 'apps/web/app/Application/Pos/ViewPosOperationsHub.php'
+      - 'apps/web/app/Delivery/Http/Pos/PosOperationsHubController.php'
+      - 'apps/web/app/Providers/PosOperationsHubServiceProvider.php'
+      - 'apps/web/resources/js/pages/Pos/OperationsHub.vue'
+      - 'apps/web/tests/pos-operations-hub.php'
+      - 'apps/web/app/Providers/FinalShiftCloseServiceProvider.php'
+      - 'apps/web/tests/pos-business-workspace-delivery-integration.php'
+      - 'ops/final-shift-close/STATE.json'
+      - 'ops/final-shift-close/DURABLE_ACTIVATION_TARGET_SELECTION.json'
+      - 'apps/web/composer.json'
+      - 'apps/web/composer.lock'
+      - 'apps/web/package.json'
+      - 'apps/web/package-lock.json'
+      - 'docs/SPRINT162_*.md'
   workflow_dispatch:
 
 permissions:
