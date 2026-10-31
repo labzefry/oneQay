@@ -1,0 +1,42 @@
+name: Export certified oneQay menu cPanel source
+on:
+  push:
+    branches:
+      - release/export-menu-deploy-tools-20261031
+    paths:
+      - '.github/workflows/export-menu-deploy-tools-20261031.yml'
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Confirm exact certified main source parent
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD^)" = "430cbbb469bc5afee4e8c67444b827943811e06f"
+          test -f tools/production/package-oneqaydev-menu-book.py
+          test -f tools/production/cpanel/update-oneqaydev-menu-book.php
+          test -f tools/production/cpanel/install-oneqaydev-mail-stock.php
+          test -f tools/production/cpanel/menu-book-migrations.php
+          test -f tools/production/cpanel/menu-vite-assets.php
+          git diff --name-only HEAD^ HEAD | grep -Fxq '.github/workflows/export-menu-deploy-tools-20261031.yml'
+          test "$(git diff --name-only HEAD^ HEAD | wc -l)" -eq 1
+      - name: Export exact unchanged cPanel packager source only
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: oneqay-menu-cpanel-source-430cbbb469bc
+          path: |
+            tools/production/package-oneqaydev-menu-book.py
+            tools/production/cpanel/update-oneqaydev-menu-book.php
+            tools/production/cpanel/install-oneqaydev-mail-stock.php
+            tools/production/cpanel/menu-book-migrations.php
+            tools/production/cpanel/menu-vite-assets.php
+          if-no-files-found: error
+          retention-days: 2
+          compression-level: 0
