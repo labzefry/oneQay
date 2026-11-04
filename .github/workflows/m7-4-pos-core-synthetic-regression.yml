@@ -143,6 +143,11 @@ jobs:
       - name: Reject database schema migration or SQL implementation
         shell: bash
         run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_REPOSITORY:-}" == labzefry/oneQay && "${GITHUB_HEAD_REF:-}" == feature/cashier-qr-membership-20261104 ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py || exit $?
+            export ONEQAY_SPRINT57_M74_COMPATIBILITY=true
+            echo ONEQAY_SPRINT57_M74_COMPATIBILITY=true >> "$GITHUB_ENV"
+          fi
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"

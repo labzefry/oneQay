@@ -5,7 +5,7 @@
   ],
   ".github/workflows/m7-4-pos-core-synthetic-regression.yml": [
     "M",
-    "29adf80fa5f3dce91a78a96065ac5635906fd9bb"
+    "a1375a226874d7ef3df32837022b046b34a2e621"
   ],
   ".github/workflows/menu-book-catalog.yml": [
     "M",
@@ -39,25 +39,37 @@
     "M",
     "340b18a5e4695ebbb3769f51c718bb04bab30fbb"
   ],
+  ".github/workflows/sprint268-dependency-security-remediation-regression.yml": [
+    "M",
+    "d1b57d2bd6b4a2da467bf489aa417100f38baa3f"
+  ],
   ".github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml": [
     "M",
-    "c2072eb1fb92d0b21f6c80baea84c7382f5e7e14"
+    "5bafb944e4090962c9106be2b546a73db50cbd78"
   ],
   ".github/workflows/sprint30-privileged-totp-mfa-regression.yml": [
     "M",
-    "7324ccfb70a8206b880fa4007a472500a76e43cc"
+    "903cfb57b26884d2050d0400052ce01620c78e9f"
   ],
   ".github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml": [
     "M",
-    "9d5fb7378c675363067bf2f59e1e22095284d89f"
+    "8a07b28655222e0950822df1ec2617f919835958"
   ],
   ".github/workflows/sprint32-authentication-recovery-proof-regression.yml": [
     "M",
-    "31ac2c50b6785dedfb397c6e9c9196abf8e3de88"
+    "7d959b13243bd983c19c457e7824a8752559979f"
+  ],
+  ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml": [
+    "M",
+    "bfde45417489ebba34563ece29417416f0f6d580"
+  ],
+  ".github/workflows/sprint34-authenticated-password-change-regression.yml": [
+    "M",
+    "954223849585419f5926d55693e162efb281cab7"
   ],
   ".github/workflows/sprint35-privileged-totp-recovery-regression.yml": [
     "M",
-    "b5d426e4c8fbc8c0b0e415acaef7d05235b6d56a"
+    "12eecc6511cbfc65feac0f6a2a55c28e5ac2b27d"
   ],
   ".github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml": [
     "M",
@@ -69,39 +81,43 @@
   ],
   ".github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml": [
     "M",
-    "b12e08d0def3e6b5f16f8a48d2375e9b7a7c7515"
+    "143e37b22d06e9d9708a0e863534b0861487a248"
+  ],
+  ".github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml": [
+    "M",
+    "5aeb44e61e912f50bd946c1f1edc302a985d2668"
   ],
   ".github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml": [
     "M",
-    "84e81de0a26f0229cd956a33b3169095842ae7d3"
+    "0fa2ccee648f9dee10c3e92e4db9d1f5c75d9f04"
   ],
   ".github/workflows/sprint47-jrn004-catalog-preparation-regression.yml": [
     "M",
-    "8646f12bed331d6790a7ca5bbff3a5da96ec2299"
+    "0839db3c31dfc98a843c1bd0597f38c01c6586b3"
   ],
   ".github/workflows/sprint48-jrn005-shift-register-opening-regression.yml": [
     "M",
-    "07e34f4103e3157d872b487745feaacf0842931d"
+    "c0f9e1d85b16281812ecec121ea3f4fa0fc3009f"
   ],
   ".github/workflows/sprint50-jrn007-completed-sale-void-regression.yml": [
     "M",
-    "6ec091b6a082cf4eb6916a0401833f9f6dbbe886"
+    "bf85fad2ff2f2f3f5a63f68e5ea372a00aa87c98"
   ],
   ".github/workflows/sprint51-jrn008-bounded-outlet-inventory-baseline-regression.yml": [
     "M",
-    "614d71798c45578ad775c1442bc679b70cf225b3"
+    "c0c0a72b12d1f2dbcc1090ab795d26d5f0907a63"
   ],
   ".github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml": [
     "M",
-    "2b0333e8487aa410a8465c18867139f192c5381f"
+    "49322bc03e7c40e73047ad457b4e3a7845927bd0"
   ],
   ".github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml": [
     "M",
-    "5c0be66f4886aa2f214721c9311ddbcafdb08b00"
+    "473378d742f808bb185c0a669405de5f4ac5e32f"
   ],
   ".github/workflows/sprint54-jrn010-prerequisite-shift-closing-cash-evidence-regression.yml": [
     "M",
-    "404c03fbdf6e0a0d3aab470841735ef41fb6ed56"
+    "41892b8c786894dfdd12d58f05fbe9786a11b32a"
   ],
   "CHANGELOG.md": [
     "M",
@@ -201,7 +217,7 @@
   ],
   "docs/operations/CASHIER_QR_MEMBERSHIP_2026-11-04.md": [
     "A",
-    "be982dfaaa800ac85c6c5bcc2a429555c0c143d8"
+    "1521e7d14e8317f8329608e08e74f9b9438474c2"
   ],
   "packages/menu-cashier-ui/MemberPicker.vue": [
     "A",

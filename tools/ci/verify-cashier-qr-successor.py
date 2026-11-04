@@ -50,6 +50,24 @@ def verify():
                       and working == blob, 'CASHIER_SUCCESSOR_WORKTREE_INVALID: ' + path)
         if path not in (SELF, MANIFEST):
             reject_unless(recorded[path] == [status, blob], 'CASHIER_SUCCESSOR_BLOB_CHANGED: ' + path)
+    # Legacy jobs expect their original migration horizon. No canonical
+    # root migration, frozen fixture, lock, or bootstrap byte is part of
+    # this successor. Assert immutable source before isolated tests run.
+    frozen = (
+        'apps/web/database/migrations', 'apps/web/tests/run.php',
+        'apps/web/tests/privileged-totp-mfa.php', 'tools/ci/historical',
+        'tools/ci/run-historical-fixture.sh', 'apps/web/bootstrap/app.php',
+        'apps/web/composer.lock', 'apps/web/package-lock.json',
+        'ops/final-shift-close',
+    )
+    reject_unless(not git('diff', '--name-only', BASE, head, '--', *frozen),
+                  'CASHIER_SUCCESSOR_HISTORICAL_SOURCE_CHANGED')
+    root_paths = git('ls-tree','-r','--name-only',head,'--','apps/web/database/migrations').decode().splitlines()
+    root_migrations = [p for p in root_paths if p.endswith('.php')]
+    reject_unless(len(root_migrations) == 27 and
+                  all(Path(p).is_file() and git('hash-object','--',p).strip() ==
+                      git('rev-parse',f'{BASE}:{p}').strip() for p in root_migrations),
+                  'CASHIER_SUCCESSOR_CANONICAL_MIGRATION_CHANGED')
     print('CASHIER_QR_EXACT_SOURCE_ENVELOPE=PASS')
 
 
