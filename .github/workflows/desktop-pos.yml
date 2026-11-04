@@ -3,7 +3,7 @@ on:
   push:
     branches: [experience-pos-desktop-20261018, pos-enterprise-20261019]
   pull_request:
-    paths: ['apps/pos-desktop/**', 'apps/web/**', 'packages/service-pos-ui/**', 'packages/ui-theme/**', '.github/workflows/desktop-pos.yml']
+    paths: ['apps/pos-desktop/**', 'apps/web/**', 'packages/service-pos-ui/**', 'packages/menu-cashier-ui/**', 'packages/ui-theme/**', '.github/workflows/desktop-pos.yml']
   workflow_dispatch:
 permissions:
   contents: read

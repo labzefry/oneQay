@@ -118,7 +118,8 @@ final readonly class LaravelMenuGuestCheckout
     /** The only code path that may mark a guest order paid; sale and order commit atomically. */
     public function settle(array $input, string $correlationId): array
     {
-        BusinessInput::fields($input,['order_id','operation_id','tender_category','tendered_atomic','expected_total_atomic'],['selected_lines']);
+        BusinessInput::fields($input,['order_id','operation_id','tender_category','tendered_atomic','expected_total_atomic'],['selected_lines','member_id']);
+        $memberId=array_key_exists('member_id',$input)?BusinessInput::text($input['member_id'],32):null;
         $op=BusinessInput::id($input['operation_id']);
         $expected=BusinessInput::integer($input['expected_total_atomic'],0,self::MAX_TOTAL);
         $tendered=BusinessInput::integer($input['tendered_atomic'],0,self::MAX_TOTAL);
@@ -136,9 +137,9 @@ final readonly class LaravelMenuGuestCheckout
         $fingerprint=hash('sha256',BusinessInput::fingerprint([
             'order_id'=>$input['order_id'],'op'=>$op,'tender_category'=>$type,
             'tendered'=>$tendered,'expected'=>$expected,'selected'=>$selected,
-        ]));
+        ]+($memberId===null?[]:['member_id'=>$memberId])));
         $scope=$this->scope();
-        return $this->db->transaction(function()use($scope,$input,$op,$type,$tendered,$expected,$selected,$fingerprint,$correlationId):array {
+        return $this->db->transaction(function()use($scope,$input,$op,$type,$tendered,$expected,$selected,$fingerprint,$correlationId,$memberId):array {
             $order=$this->findLocked($scope,$input['order_id']);
             $opHash=hash('sha256',$op);
             if ($order->status==='paid') {
@@ -153,6 +154,8 @@ final readonly class LaravelMenuGuestCheckout
             if ($order->status!=='pending' || (int)$order->created_at<time()-self::MAX_ORDER_AGE) {
                 throw new BusinessViolation('ORDER_NOT_PENDING',409);
             }
+            $membership=$memberId===null?null:app(LaravelCashierMemberships::class);
+            if ($membership) $membership->requireActive($memberId,true);
             $quote=$this->canonicalQuote($scope,$order,$selected);
             if ($quote['total_atomic']!==$expected) throw new BusinessViolation('ORDER_PRICE_CHANGED',409);
             if ($tendered<$expected || ($type==='MANUAL_EXTERNAL' && $tendered!==$expected)) {
@@ -179,6 +182,7 @@ final readonly class LaravelMenuGuestCheckout
                     'settled_total_atomic'=>$receipt->total()->atomicUnits(),'settled_at'=>time(),
                 ]);
             if ($changed!==1) throw new BusinessViolation('ORDER_STATE_CONFLICT',409);
+            if ($membership) $membership->attachToSale($memberId,$receipt->saleId());
             return ['status'=>'paid','order_id'=>$order->id,'sale_id'=>$receipt->saleId(),
                 'total_atomic'=>(string)$receipt->total()->atomicUnits(),'replayed'=>false];
         },1);

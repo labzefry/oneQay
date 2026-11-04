@@ -61,11 +61,16 @@ final class BusinessManagementServiceProvider extends ServiceProvider
 
 
         Route::middleware(['web', 'session.active', 'throttle:60,1', RequirePosSessionContextMiddleware::class])->group(static function (): void {
+            if (config('oneqay.cashier_membership.enabled',false)) {
+                Route::get('/pos/business/cashier-members',[\App\Delivery\Http\Business\CashierMembershipController::class,'page'])->name('business.cashier-members');
+                Route::post('/pos/business/menu-orders/{action}', \App\Delivery\Http\Business\CashierMembershipController::class)
+                    ->whereIn('action',['member-lookup','member-register'])->middleware('throttle:10,1');
+            }
             $menu=\App\Delivery\Http\Business\MenuBookController::class;
             if ((bool) config('oneqay.menu_guest_ordering.enabled', false)) {
                 $orders=\App\Delivery\Http\Business\MenuGuestCashierController::class;
                 Route::get('/pos/business/menu-orders',[$orders,'page'])->name('business.menu-orders');
-                Route::get('/pos/business/menu-orders/lookup',[$orders,'lookup'])->middleware('throttle:20,1');
+                Route::match(['GET','POST'],'/pos/business/menu-orders/lookup',[$orders,'lookup'])->middleware('throttle:20,1');
                 Route::post('/pos/business/menu-orders/quote',[$orders,'quote'])->middleware('throttle:20,1');
                 Route::post('/pos/business/menu-orders/settle',[$orders,'settle'])->middleware('throttle:5,1');
                 Route::post('/pos/business/menu-orders/cancel',[$orders,'cancel'])->middleware('throttle:10,1');

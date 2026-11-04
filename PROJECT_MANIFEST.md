@@ -1,5 +1,10 @@
 ## 2026-10-29 — Menu media lifecycle and MIME patch (PR #992 draft)
 
+## 2026-11-04 — Shared QR cashier and membership enrollment (source candidate)
+
+Web and Windows share the cashier order UI and authoritative checkout. Cashiers can look up and enroll members and associate them with paid QR receipts; the new tables are additive and default off. Member login, points, ordinary sale attribution, hosted migration and signed Windows release are pending. See [scope, API, verification and rollout](docs/operations/CASHIER_QR_MEMBERSHIP_2026-11-04.md).
+
+
 Adds a bounded gallery, selection and audited deletion of unused cover images, protecting both saved draft and publication references. Menu page transitions respect reduced motion. Patches symfony/mime v7.4.19 to v7.4.22 for CVE-2026-45070 without changing other locked packages. Local GD SQLite361, MIME26, application regression, Vue type-check/build and palette checks pass; Composer/web/desktop npm audits report no advisories. Exact new-head CI, visual QA, remaining feature scope and additive cPanel qualification are pending. Not merged/deployed. [Evidence and remaining work](docs/operations/MENU_MEMBERSHIP_ROADMAP_2026-10-29.md).
 
 ## 2026-10-29 — Menu-book cover draft (PR #992, not deployed)

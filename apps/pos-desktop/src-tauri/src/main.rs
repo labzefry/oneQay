@@ -4,6 +4,7 @@ mod auth;
 mod hardware;
 mod updates;
 mod service_pos;
+mod menu_orders;
 use oneqay_pos_core::{receipt_bytes, Line, PrinterSettings, Snapshot, Store, Workspace};
 use serde_json::{json, Value};
 use std::{
@@ -79,6 +80,15 @@ fn request(server: &str, path: &str, token: Option<&str>, body: Option<Value>) -
         return Err("POS_NETWORK_RESPONSE_TOO_LARGE".into());
     }
     if !status.is_success() {
+        // Forward only bounded machine codes from the QR API.
+        let safe_menu_code = if path.starts_with("v3/menu-orders/") && matches!(status.as_u16(),400|404|409|422) {
+            serde_json::from_slice::<Value>(&bytes).ok().and_then(|v| {
+                let code = v["error"]["code"].as_str()?;
+                (!code.is_empty() && code.len() <= 64 && code.bytes().all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || b == b'_'))
+                    .then(|| code.to_owned())
+            })
+        } else { None };
+        if let Some(code) = safe_menu_code { return Err(format!("{code} · {correlation}")); }
         let code = if status.as_u16() == 401 {
             "POS_SIGN_IN_AGAIN"
         } else if status.as_u16() == 403 {
@@ -414,6 +424,7 @@ fn main() {
             auth::lock_pos,
             auth::unlock_pos,
             auth::activity,
+            menu_orders::menu_order,
             service_pos::service_workspace,
             service_pos::service_command,
             service_pos::service_reconcile,

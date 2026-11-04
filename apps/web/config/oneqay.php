@@ -119,6 +119,9 @@ return [
     ],
 
     // Guest QR ordering and cashier settlement are disabled until schema/host certification.
+    'cashier_membership' => [
+        'enabled' => filter_var(env('ONEQAY_CASHIER_MEMBERSHIP_ENABLED', false), FILTER_VALIDATE_BOOL),
+    ],
     'menu_guest_ordering' => [
         'enabled' => filter_var(env('ONEQAY_MENU_GUEST_ORDERING_ENABLED', false), FILTER_VALIDATE_BOOL),
     ],
