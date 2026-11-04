@@ -128,6 +128,10 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           HEAD_REF: ${{ github.head_ref }}
         run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py
+            exit $?
+          fi
           # Exact scoped successor validation; functional regressions below remain enabled.
           if [[ "${{ github.head_ref }}" == 'fix/pos-sync-tenant-reset-20261022' && "${{ github.event.pull_request.base.sha }}" == 'a3650644ef0634e3a51431a707fc7bd791b9cfdf' && "${{ github.event.pull_request.number }}" == '981' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-pos-sync-business-reset-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1

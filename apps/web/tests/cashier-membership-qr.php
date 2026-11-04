@@ -16,7 +16,7 @@ use App\Infrastructure\Business\LaravelCashierMemberships;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-$config=['oneqay.cashier_membership.enabled'=>true,'oneqay.menu_guest_ordering.enabled'=>true];
+$config=['cashier_membership.enabled'=>true,'oneqay.menu_guest_ordering.enabled'=>true];
 config($config);
 $contexts->setVerified($businessOwner);
 $memberService=$app->make(LaravelCashierMemberships::class);

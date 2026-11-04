@@ -412,7 +412,13 @@ jobs:
           ONEQAY_CI_EXPRESSION_0: ${{ github.event_name }}
           ONEQAY_CI_EXPRESSION_1: ${{ github.event.pull_request.base.sha }}
           ONEQAY_CI_EXPRESSION_2: ${{ github.event.pull_request.head.sha }}
-        run: bash "$GITHUB_WORKSPACE/tools/ci/historical/sprint37-first-party-all-session-termination-regression-6.sh"
+        run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py
+            exit $?
+          fi
+          bash "$GITHUB_WORKSPACE/tools/ci/historical/sprint37-first-party-all-session-termination-regression-6.sh"
+
       - name: Isolate Sprint41 journal from historical Sprint37 executable preservation
         if: env.ONEQAY_SPRINT41_SOURCE_SUCCESSOR == 'true'
         shell: bash

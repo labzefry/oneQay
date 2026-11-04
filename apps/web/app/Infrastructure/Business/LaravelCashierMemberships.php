@@ -27,7 +27,7 @@ final readonly class LaravelCashierMemberships
 
     private function enabled(): void
     {
-        if (!config('oneqay.cashier_membership.enabled',false)
+        if (!config('cashier_membership.enabled',false)
             || !$this->database->connection()->getSchemaBuilder()->hasTable('oneqay_cashier_memberships')) {
             throw new BusinessViolation('MEMBERSHIP_UNAVAILABLE',503);
         }

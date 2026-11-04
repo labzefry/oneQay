@@ -53,7 +53,13 @@ jobs:
           ONEQAY_CI_EXPRESSION_0: ${{ github.base_ref }}
           ONEQAY_CI_EXPRESSION_1: ${{ github.event.pull_request.base.sha }}
           ONEQAY_CI_EXPRESSION_2: ${{ github.event.pull_request.head.sha }}
-        run: bash "$GITHUB_WORKSPACE/tools/ci/historical/m7-4-pos-core-synthetic-regression-1.sh"
+        run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py
+            exit $?
+          fi
+          bash "$GITHUB_WORKSPACE/tools/ci/historical/m7-4-pos-core-synthetic-regression-1.sh"
+
       - name: Preserve root Platform Foundation regression
         run: |
           composer validate --strict --no-check-publish

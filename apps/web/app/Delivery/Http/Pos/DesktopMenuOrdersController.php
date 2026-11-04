@@ -23,8 +23,8 @@ final readonly class DesktopMenuOrdersController
 
     public function __invoke(Request $request, string $action): mixed
     {
-        $feature=str_starts_with($action,'member-')?'cashier_membership':'menu_guest_ordering';
-        abort_unless(config('oneqay.'.$feature.'.enabled',false),404);
+        $feature=str_starts_with($action,'member-')?'cashier_membership.enabled':'oneqay.menu_guest_ordering.enabled';
+        abort_unless(config($feature,false),404);
         abort_if(strlen($request->getContent())>16384,413);
         try {
             $this->desktop->authenticate((string)$request->bearerToken());

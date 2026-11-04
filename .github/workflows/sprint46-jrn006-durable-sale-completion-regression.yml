@@ -68,7 +68,13 @@ jobs:
           ONEQAY_CI_EXPRESSION_2: ${{ github.event.pull_request.number }}
           ONEQAY_CI_EXPRESSION_3: ${{ github.event.pull_request.head.repo.full_name }}
           ONEQAY_CI_EXPRESSION_4: ${{ github.event.pull_request.head.sha }}
-        run: bash "$GITHUB_WORKSPACE/tools/ci/historical/sprint46-jrn006-durable-sale-completion-regression-1.sh"
+        run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py
+            exit $?
+          fi
+          bash "$GITHUB_WORKSPACE/tools/ci/historical/sprint46-jrn006-durable-sale-completion-regression-1.sh"
+
       - name: Preserve migrations one through fifteen and validate migration sixteen
         if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash

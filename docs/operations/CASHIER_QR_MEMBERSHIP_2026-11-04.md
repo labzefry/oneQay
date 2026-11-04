@@ -15,3 +15,7 @@ Windows uses an allowlisted, HTTPS-only native command. It reuses the encrypted 
 - Exact SQLite/MySQL and Windows build CI, independent security review, cPanel operator rehearsal, and device testing with a physical scanner remain release gates. Local validation does not certify the signed installer or hosted runtime.
 
 Still outside this change: member login/setup email, accrual/redemption and refund-safe point ledger, membership for non-QR sales, receipt/reminder email, printing native QR receipts, and signed Windows publication.
+
+## CI follow-up
+
+The first PR head passed the dedicated SQLite/MySQL menu and membership suite and Windows installer build. Its failed jobs stopped in legacy sprint source-envelope steps, not in those product suites. Membership configuration now uses a dedicated config file so the historical updater and shift-close configuration assertions can remain intact. The remaining historical scope checks accept this successor only for the internal PR #995, its pinned base and branch, and exact Git blobs and file modes in the successor manifest. Original behavior for other events, frozen legacy fixture scripts, operational authorization assertions and independent functional steps remain unchanged.

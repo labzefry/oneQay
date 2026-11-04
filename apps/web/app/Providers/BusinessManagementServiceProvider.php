@@ -61,7 +61,7 @@ final class BusinessManagementServiceProvider extends ServiceProvider
 
 
         Route::middleware(['web', 'session.active', 'throttle:60,1', RequirePosSessionContextMiddleware::class])->group(static function (): void {
-            if (config('oneqay.cashier_membership.enabled',false)) {
+            if (config('cashier_membership.enabled',false)) {
                 Route::get('/pos/business/cashier-members',[\App\Delivery\Http\Business\CashierMembershipController::class,'page'])->name('business.cashier-members');
                 Route::post('/pos/business/menu-orders/{action}', \App\Delivery\Http\Business\CashierMembershipController::class)
                     ->whereIn('action',['member-lookup','member-register'])->middleware('throttle:10,1');

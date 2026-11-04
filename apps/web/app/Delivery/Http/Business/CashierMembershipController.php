@@ -18,7 +18,7 @@ final readonly class CashierMembershipController
 
     public function page(): mixed
     {
-        abort_unless(config('oneqay.cashier_membership.enabled',false),404);
+        abort_unless(config('cashier_membership.enabled',false),404);
         try { $this->access->require('pos.sale.complete'); }
         catch (DurableAuthorizationViolation|BusinessViolation) { abort(403); }
         return Inertia::render('Business/MenuGuestOrders',[
@@ -28,7 +28,7 @@ final readonly class CashierMembershipController
 
     public function __invoke(Request $r,string $action): mixed
     {
-        abort_unless(config('oneqay.cashier_membership.enabled',false),404);
+        abort_unless(config('cashier_membership.enabled',false),404);
         $headers=['Cache-Control'=>'no-store, private','Referrer-Policy'=>'no-referrer'];
         $correlation=(string)$r->attributes->get('oneqay.correlation_id','correlation-missing');
         try {

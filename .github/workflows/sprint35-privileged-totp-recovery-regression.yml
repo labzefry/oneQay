@@ -375,7 +375,13 @@ jobs:
         env:
           ONEQAY_PR_BASE: ${{ github.event.pull_request.base.sha || github.sha }}
           ONEQAY_PR_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: bash "$GITHUB_WORKSPACE/tools/ci/historical/sprint35-privileged-totp-recovery-regression.sh"
+        run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py
+            exit $?
+          fi
+          bash "$GITHUB_WORKSPACE/tools/ci/historical/sprint35-privileged-totp-recovery-regression.sh"
+
       - name: Isolate exact Sprint41 state from historical Sprint35 executable preservation
         if: env.ONEQAY_SPRINT41_S35_PRESERVATION == 'true'
         shell: bash

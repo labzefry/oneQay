@@ -59,7 +59,7 @@ final readonly class MenuGuestCashierController
             $this->access->require('pos.sale.complete');
             return Inertia::render('Business/MenuGuestOrders',[
                 'settlement_enabled'=>(bool)config('oneqay.pos_sale_completion.enabled',false),
-                'membership_enabled'=>(bool)config('oneqay.cashier_membership.enabled',false),
+                'membership_enabled'=>(bool)config('cashier_membership.enabled',false),
             ]);
         });
     }

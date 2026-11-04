@@ -28,7 +28,7 @@ $this->app->scoped(LaravelDesktopPosService::class,fn($a)=>new LaravelDesktopPos
    Route::get('/pos/desktop/review',[Controller::class,'review'])->name('pos.desktop.review');
   });
   // Native requests carry an opaque credential, not browser cookies; never add CSRF exclusions to web routes.
-  if (config('oneqay.menu_guest_ordering.enabled',false)||config('oneqay.cashier_membership.enabled',false)) {
+  if (config('oneqay.menu_guest_ordering.enabled',false)||config('cashier_membership.enabled',false)) {
    Route::post('/api/pos/desktop/v3/menu-orders/{action}', \App\Delivery\Http\Pos\DesktopMenuOrdersController::class)
     ->whereIn('action',['lookup','quote','settle','cancel','member-lookup','member-register'])->middleware(['throttle:20,1']);
   }
