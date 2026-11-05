@@ -244,6 +244,9 @@ jobs:
           if [[ "${{ github.event_name }}" == 'pull_request' && "${{ github.event.pull_request.number }}" == '992' && "${{ github.head_ref }}" == 'feature/menu-membership-20261029' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             python3 tools/ci/verify-menu-successor.py --frozen-inputs || exit 1
             menu_verified_exclusions=(':(exclude)apps/web/bootstrap/app.php' ':(exclude)apps/web/composer.lock' ':(exclude)apps/web/package.json' ':(exclude)apps/web/package-lock.json')
+          elif [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_REPOSITORY:-}" == labzefry/oneQay && "${GITHUB_HEAD_REF:-}" == feature/cashier-qr-membership-20261104 ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py || exit 1
+            menu_verified_exclusions=(':(exclude)apps/web/composer.lock')
           fi
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"

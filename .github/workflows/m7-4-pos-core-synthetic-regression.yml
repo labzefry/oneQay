@@ -85,7 +85,12 @@ jobs:
           set -euo pipefail
           test -f apps/web/composer.lock
           test -f apps/web/package-lock.json
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | \
+          verified_lock_exclusion=()
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_REPOSITORY:-}" == labzefry/oneQay && "${GITHUB_HEAD_REF:-}" == feature/cashier-qr-membership-20261104 ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py
+            verified_lock_exclusion=(':(exclude)apps/web/composer.lock')
+          fi
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" -- . "${verified_lock_exclusion[@]}" | \
             grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
             echo "M7.4 does not authorize dependency-manifest or lockfile changes." >&2
             exit 1

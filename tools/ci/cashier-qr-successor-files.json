@@ -5,7 +5,7 @@
   ],
   ".github/workflows/m7-4-pos-core-synthetic-regression.yml": [
     "M",
-    "a1375a226874d7ef3df32837022b046b34a2e621"
+    "b806fe5b1f2431773ab43d846f2c29258a45274d"
   ],
   ".github/workflows/menu-book-catalog.yml": [
     "M",
@@ -85,7 +85,7 @@
   ],
   ".github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml": [
     "M",
-    "5aeb44e61e912f50bd946c1f1edc302a985d2668"
+    "f02c6d098b4ef973246c7e6ee1f6807505ab746f"
   ],
   ".github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml": [
     "M",
@@ -225,7 +225,7 @@
   ],
   "docs/operations/CASHIER_QR_MEMBERSHIP_2026-11-04.md": [
     "A",
-    "a2e0737c75f1a44510d6a410f6360fe712fb3534"
+    "79a237b73e3dd957029ea160f70ae527a9749cb3"
   ],
   "packages/menu-cashier-ui/MemberPicker.vue": [
     "A",
