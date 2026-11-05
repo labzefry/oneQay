@@ -28,8 +28,11 @@ $n=0;$assert=static function(bool $ok,string $why)use(&$n):void{++$n;if(!$ok)thr
 $reject=static function(callable $f,string $why)use($assert):void{try{$f();}catch(BusinessViolation|DurableAuthorizationViolation|Illuminate\Database\QueryException $e){$assert(true,$why);return;}$assert(false,$why);};
 
 foreach(['organizations','outlets','identities','devices']as$table)Schema::create('oneqay_'.$table,static function(Blueprint $t):void{$t->string('tenant_id',64);$t->string('id',96);$t->primary(['tenant_id','id']);});
-Schema::create('oneqay_pos_sale_catalog_items',static function(Blueprint $t):void{$t->string('tenant_id',64);$t->string('outlet_id',64);$t->string('product_id',64);$t->string('display_name',160);$t->unsignedBigInteger('available_quantity');$t->unsignedBigInteger('unit_price_atomic');$t->char('currency',3);$t->unsignedTinyInteger('currency_scale');$t->boolean('active');$t->primary(['tenant_id','outlet_id','product_id']);});
+// Use the real sale foundation so stock-mode migrations exercise canonical sale lines too.
+(require glob(__DIR__.'/../database/migrations/0000_00_00_000016_*.php')[0])->up();
 Schema::create('oneqay_pos_inventory_baselines',static function(Blueprint $t):void{$t->string('tenant_id',64);$t->string('organization_id',64);$t->string('outlet_id',64);$t->string('product_id',64);});
+// POS module migration dependencies include the canonical session foundation.
+(require glob(__DIR__.'/../database/migrations/0000_00_00_000013_*.php')[0])->up();
 foreach(glob(__DIR__.'/../database/module-migrations/pos/*.php')as$file)(require $file)->up();
 (require __DIR__.'/../database/module-migrations/business/2026_10_12_000001_create_integrated_business_management.php')->up();
 foreach(['tenant-a','tenant-b']as$tenant){foreach(['organizations'=>'org-a','outlets'=>'outlet-a','identities'=>'identity-a','devices'=>'device-a']as$table=>$id)$db->table('oneqay_'.$table)->insert(['tenant_id'=>$tenant,'id'=>$id]);}

@@ -235,6 +235,11 @@ jobs:
         if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'agent/m7-4a-')
         shell: bash
         run: |
+          # Current native-session successor: exact reviewed source, canonical history unchanged.
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py
+            exit $?
+          fi
           set -euo pipefail
           git fetch --no-tags origin "${{ github.base_ref }}"
           git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/m74a-changed-files.txt
@@ -273,6 +278,12 @@ jobs:
         if: github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true'
         shell: bash
         run: |
+          # Native package version bump is blob-bound; application dependencies stay frozen.
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py || exit $?
+            git diff --exit-code 5ab9b673437eca9501657f395f329610266ee7bb HEAD -- composer.json composer.lock apps/web/composer.json apps/web/composer.lock apps/web/package.json apps/web/package-lock.json
+            exit $?
+          fi
           if [[ "${{ github.head_ref }}" == 'feat/business-workspaces-20261023' && "${{ github.event.pull_request.base.sha }}" == '90a9b298c3b44a4cfa7700a23fc78d1eec0655b2' && "${{ github.event.pull_request.number }}" == '987' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             bash tools/qa-business-experience-source-envelope.sh "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" || exit 1
             exit 0
@@ -577,6 +588,11 @@ jobs:
         if: ((env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')
         shell: bash
         run: |
+          # Current native-session successor: exact reviewed source, canonical history unchanged.
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py
+            exit $?
+          fi
           # Exact public website successor; original executable behavior and identity foundations preserved.
           # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
           if [[ "${{ github.head_ref }}" == 'feat/business-workspaces-20261023' && "${{ github.event.pull_request.base.sha }}" == '90a9b298c3b44a4cfa7700a23fc78d1eec0655b2' && "${{ github.event.pull_request.number }}" == '987' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
@@ -796,7 +812,12 @@ jobs:
 
       - name: Preserve Sprint 26 credential verification regression
         working-directory: apps/web
-        run: php tests/identity-credential-verification.php
+        run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            (cd ../.. && python3 tools/ci/verify-windows-pos-successor.py && bash tools/ci/run-desktop-historical-fixture.sh s26) || exit $?
+          else
+            php tests/identity-credential-verification.php
+          fi
 
       - name: Preserve Sprint 27 first-party session regression
         working-directory: apps/web
@@ -804,7 +825,12 @@ jobs:
 
       - name: Preserve Sprint 28 initial password enrollment regression
         working-directory: apps/web
-        run: php tests/initial-password-enrollment.php
+        run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            (cd ../.. && python3 tools/ci/verify-windows-pos-successor.py && bash tools/ci/run-historical-fixture.sh s28) || exit $?
+          else
+            php tests/initial-password-enrollment.php
+          fi
 
       - name: Run M7.4A Technical Preview interaction regression
         working-directory: apps/web

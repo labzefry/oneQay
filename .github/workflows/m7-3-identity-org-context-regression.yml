@@ -395,6 +395,11 @@ jobs:
         if: ((((github.event_name == 'pull_request' && env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && env.ONEQAY_SPRINT35_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
+          # Current native-session successor: exact reviewed source, canonical history unchanged.
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py
+            exit $?
+          fi
           # Exact public website successor; original executable behavior and identity foundations preserved.
           # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
           if [[ "${{ github.head_ref }}" == 'feat/business-workspaces-20261023' && "${{ github.event.pull_request.base.sha }}" == '90a9b298c3b44a4cfa7700a23fc78d1eec0655b2' && "${{ github.event.pull_request.number }}" == '987' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
@@ -521,6 +526,11 @@ jobs:
         if: (((env.ONEQAY_SPRINT30_SUCCESSOR != 'true') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')) && (github.event_name != 'pull_request' || github.head_ref != 'production-dev-readiness-and-merchant-foundation-20261010')) && env.ONEQAY_BILINGUAL_PRESENTATION != 'true'
         shell: bash
         run: |
+          # Current native-session successor: exact reviewed source, canonical history unchanged.
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py
+            exit $?
+          fi
           # Exact public website successor; original executable behavior and identity foundations preserved.
           # Exact control plane successor; canonical identity, runtime, and POS regressions remain required.
           if [[ "${{ github.head_ref }}" == 'feat/business-workspaces-20261023' && "${{ github.event.pull_request.base.sha }}" == '90a9b298c3b44a4cfa7700a23fc78d1eec0655b2' && "${{ github.event.pull_request.number }}" == '987' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
@@ -662,6 +672,14 @@ jobs:
           php tests/policy-administration-delivery.php
           php tests/tenant-isolation.php
           php tests/identity-org-context.php
-          php tests/identity-credential-verification.php
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            (cd ../.. && python3 tools/ci/verify-windows-pos-successor.py && bash tools/ci/run-desktop-historical-fixture.sh s26) || exit $?
+          else
+            php tests/identity-credential-verification.php
+          fi
           php tests/first-party-session-establishment.php
-          php tests/initial-password-enrollment.php
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            (cd ../.. && python3 tools/ci/verify-windows-pos-successor.py && bash tools/ci/run-historical-fixture.sh s28) || exit $?
+          else
+            php tests/initial-password-enrollment.php
+          fi

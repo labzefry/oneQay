@@ -17,8 +17,9 @@ if (in_array($bootstrapRuntime, ['local', 'test', 'ci'], true) && $bootstrapArme
     Artisan::command('oneqay:identity:first-control-credential-bootstrap {tenant_id}', function (): int {
         try {
             $tenantId = TenantId::fromString((string) $this->argument('tenant_id'));
-            $password = $this->secret('New first-control-principal password');
-            $confirmation = $this->secret('Confirm first-control-principal password');
+            $prompts = new \App\Delivery\Console\ExactSecretInput($this->output);
+            $password = $prompts->secret('New first-control-principal password');
+            $confirmation = $prompts->secret('Confirm first-control-principal password');
 
             if (! is_string($password)
                 || ! is_string($confirmation)
