@@ -195,6 +195,10 @@
     "M",
     "b24f9cb382f98798d171d27edd2be72ecca15cdd"
   ],
+  "apps/web/composer.lock": [
+    "M",
+    "080225d366d8279d7ca27bdc558ddaa860eb80c7"
+  ],
   "apps/web/config/cashier_membership.php": [
     "A",
     "75c498222b84b39b4e91d3e79b12248e99fdab59"
@@ -221,7 +225,7 @@
   ],
   "docs/operations/CASHIER_QR_MEMBERSHIP_2026-11-04.md": [
     "A",
-    "68c58df5a91a7852088590ec41f67e0283016726"
+    "a2e0737c75f1a44510d6a410f6360fe712fb3534"
   ],
   "packages/menu-cashier-ui/MemberPicker.vue": [
     "A",

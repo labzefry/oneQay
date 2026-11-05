@@ -25,3 +25,7 @@ The next CI run confirmed the menu and Windows builds again; its remaining failu
 ## Independent review follow-up
 
 The exact `a23fb3b` review found that the cashier could confirm payment before a member lookup returned. A delayed selection could invalidate confirmation while a payment reply was unknown. The shared workspace now blocks confirmation and payment until member actions finish, requires reconfirmation after a selection, and keeps the original member, amount, lines and operation ID for retry. A native rejection before HTTP cannot resolve an earlier uncertain attempt. The desktop UI test delays the member lookup, simulates a lost reply and a local retry rejection, then checks that retry sends the same body.
+
+## November 5 dependency security follow-up
+
+The payment replay fix's CI run surfaced newly published Symfony advisories in the inherited lockfile. Composer now locks only `symfony/http-foundation`, `symfony/http-kernel` and `symfony/routing` to 7.4.23. The exact successor validator checks those three upstream references and preserves the rest of the dependency set. Composer validation and the locked security audit pass without advisory exclusions. The hosted pilot has not run.
