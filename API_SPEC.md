@@ -1,3 +1,7 @@
+## 2026-11-05 — Windows POS 0.2.8 candidate: persistent cashier login and lock controls
+
+Adds a native-only persistent session kind, protected account restoration across app close, explicit durable logout/revocation, and per-cashier local automatic lock (off / 1 / 2 / 5 / 10 / 15 / 30 minutes). Packages the existing shared QR/member cashier UI in the next Windows version. Browser TTL, tenant/RBAC/TOTP revocation and bounded offline transaction leases remain enforced. **Not yet merged/deployed/published; exact-head CI and independent implementation review pending.** [Contract, threat model, tests and rollout](docs/operations/WINDOWS_POS_PERSISTENT_SESSION_2026-11-05.md).
+
 # oneQay API Specification and Governance
 
 ## Scope

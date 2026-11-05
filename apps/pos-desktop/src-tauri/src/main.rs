@@ -1,6 +1,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 // Author by Lab | zefry
 mod auth;
+mod remember;
 mod hardware;
 mod updates;
 mod service_pos;
@@ -89,7 +90,9 @@ fn request(server: &str, path: &str, token: Option<&str>, body: Option<Value>) -
             })
         } else { None };
         if let Some(code) = safe_menu_code { return Err(format!("{code} · {correlation}")); }
-        let code = if status.as_u16() == 401 {
+        let code = if path == "v3/login" && matches!(status.as_u16(),404|503) {
+            "POS_SERVER_UPGRADE_REQUIRED"
+        } else if status.as_u16() == 401 {
             "POS_SIGN_IN_AGAIN"
         } else if status.as_u16() == 403 {
             "POS_PERMISSION_DENIED"
@@ -221,6 +224,7 @@ async fn synchronize(
                 return Err("UPDATE_IN_PROGRESS".into());
             }
         }
+        {let s=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;let _=remember::flush(&s.directory);}
         if store.snapshot().map_err(safe)?.is_some_and(|v|matches!(v.settings["business_type"].as_str(),Some("laundry"|"boarding"|"homestay"))){let(_,token)=credential(&store)?;let raw=match request(auth::SERVER,"v2/snapshot",Some(&token),None){Ok(v)=>v,Err(e)=>{if e.starts_with("POS_SIGN_IN_AGAIN")||e.starts_with("POS_PERMISSION_DENIED"){store.set("authority_state","blocked").map_err(safe)?;let mut security=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;security.signed_in=false;security.is_locked=true;}return Err(e)}};let snapshot:Snapshot=serde_json::from_value(raw).map_err(|_|"POS_SNAPSHOT_INVALID")?;store.apply_snapshot(&snapshot,now()).map_err(safe)?;return auth::visible(&sec,&store)}
         let (_, token) = credential(&store)?;
         let batch = store.pending().map_err(safe)?;
@@ -420,6 +424,8 @@ fn main() {
             print_kitchen,
             test_printer,
             auth::security_status,
+            auth::resume_session,
+            auth::save_security_settings,
             auth::login,
             auth::lock_pos,
             auth::unlock_pos,

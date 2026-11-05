@@ -32,6 +32,9 @@ $this->app->scoped(LaravelDesktopPosService::class,fn($a)=>new LaravelDesktopPos
    Route::post('/api/pos/desktop/v3/menu-orders/{action}', \App\Delivery\Http\Pos\DesktopMenuOrdersController::class)
     ->whereIn('action',['lookup','quote','settle','cancel','member-lookup','member-register'])->middleware(['throttle:20,1']);
   }
+  Route::middleware(['throttle:5,1','throttle:20,60'])->post('/api/pos/desktop/v3/login',[Enterprise::class,'persistentLogin']);
+  Route::middleware('throttle:60,1')->post('/api/pos/desktop/v3/logout',[Enterprise::class,'logout']);
+  Route::middleware('throttle:60,1')->get('/api/pos/desktop/v3/capabilities',function(){return response()->json(['persistent_native_session'=>app('db')->connection()->getSchemaBuilder()->hasColumn('oneqay_identity_first_party_sessions','authority_kind'),'source'=>(string)env('ONEQAY_RUNNING_SOURCE_COMMIT','')],200,['Cache-Control'=>'no-store']);});
   Route::middleware(['throttle:5,1','throttle:20,60'])->post('/api/pos/desktop/v2/login',[Enterprise::class,'login']);
   Route::middleware('throttle:120,1')->get('/api/pos/desktop/v2/snapshot',[Enterprise::class,'snapshot']);
   Route::middleware('throttle:120,1')->post('/api/pos/desktop/v2/sync',[Enterprise::class,'sync']);

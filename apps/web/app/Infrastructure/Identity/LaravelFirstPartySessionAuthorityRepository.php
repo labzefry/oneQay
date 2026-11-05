@@ -13,7 +13,7 @@ use Illuminate\Database\Connection;
 use Throwable;
 
 // Author by Lab | zefry
-final readonly class LaravelFirstPartySessionAuthorityRepository implements FirstPartySessionAuthorityRepository
+final readonly class LaravelFirstPartySessionAuthorityRepository implements \App\Application\Identity\PersistentDesktopSessionAuthorityRepository
 {
     private const SESSION_TABLE = 'oneqay_identity_first_party_sessions';
     private const AUDIT_TABLE = 'oneqay_identity_first_party_session_audit';
@@ -26,6 +26,29 @@ final readonly class LaravelFirstPartySessionAuthorityRepository implements Firs
         private string $runtimeClass,
         private bool $featureEnabled,
     ) {}
+
+    public function issuePersistentDesktop(
+        TenantId $tenantId, PlatformIdentityId $identityId, string $organizationId,
+        ?string $outletId, ?string $deviceId, int $credentialEpoch, ?int $factorEpoch,
+        string $authorityId, string $publicHandle, int $issuedAtUnix, int $expiresAtUnix,
+        string $correlationId,
+    ): IssuedFirstPartySessionAuthority {
+        $this->assertOperational();
+        if ($outletId === null || $deviceId === null || $expiresAtUnix !== PHP_INT_MAX
+            || !$this->connection->getSchemaBuilder()->hasColumn(self::SESSION_TABLE, 'authority_kind')) {
+            $this->invalidState();
+        }
+        return $this->connection->transaction(function () use ($tenantId,$identityId,$organizationId,$outletId,$deviceId,$credentialEpoch,$factorEpoch,$authorityId,$publicHandle,$issuedAtUnix,$expiresAtUnix,$correlationId) {
+            // Only the row freshly issued in this transaction can be marked native.
+            $issued = $this->issue($tenantId,$identityId,$organizationId,$outletId,$deviceId,$credentialEpoch,$factorEpoch,$authorityId,$publicHandle,$issuedAtUnix,$expiresAtUnix,$correlationId);
+            $changed = $this->connection->table(self::SESSION_TABLE)->where('tenant_id',$tenantId->value())
+                ->where('identity_id',$identityId->value())->where('authority_id',$authorityId)
+                ->where('authority_kind','browser')->whereNull('revoked_at_unix')
+                ->update(['authority_kind'=>'desktop_persistent']);
+            if ($changed !== 1) $this->storageFailure();
+            return $issued;
+        });
+    }
 
     public function issue(
         TenantId $tenantId,
@@ -448,6 +471,7 @@ final readonly class LaravelFirstPartySessionAuthorityRepository implements Firs
     private function rowArray(object $row): array
     {
         return [
+            'authority_kind' => $row->authority_kind ?? 'browser',
             'tenant_id' => $row->tenant_id ?? null,
             'authority_id' => $row->authority_id ?? null,
             'public_handle' => $row->public_handle ?? null,
