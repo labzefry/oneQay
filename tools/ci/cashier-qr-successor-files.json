@@ -147,6 +147,10 @@
     "M",
     "79d11265649e165b0fa2cae7615b3303ceba9f91"
   ],
+  "apps/pos-desktop/tests/ui.cjs": [
+    "M",
+    "bb8f55cba5c849ba438562e92004d9783e86e3b2"
+  ],
   "apps/web/app/Delivery/Http/Business/CashierMembershipController.php": [
     "A",
     "9e60bf37eb3f981d3a2027e5cee29dec827cabd9"
@@ -217,14 +221,14 @@
   ],
   "docs/operations/CASHIER_QR_MEMBERSHIP_2026-11-04.md": [
     "A",
-    "1521e7d14e8317f8329608e08e74f9b9438474c2"
+    "68c58df5a91a7852088590ec41f67e0283016726"
   ],
   "packages/menu-cashier-ui/MemberPicker.vue": [
     "A",
-    "12a82ffc0b6090dfd72b80bd51f90dbd442b33cf"
+    "e99025a7b97136165f3b7c3f6821e59efa0cf991"
   ],
   "packages/menu-cashier-ui/MenuOrderWorkspace.vue": [
     "A",
-    "6d13929f1e01014498b7ef294bfe087977c0e426"
+    "9afcf3a875fa5058d4ec9634aa6b42c18e2871a9"
   ]
 }

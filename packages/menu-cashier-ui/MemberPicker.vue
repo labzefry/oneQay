@@ -10,7 +10,7 @@ const props=defineProps<{
  selected:Member|null;
  send:(action:'member-lookup'|'member-register',body:Record<string,unknown>)=>Promise<{member:Member|null}>;
 }>()
-const emit=defineEmits<{select:[Member|null]}>()
+const emit=defineEmits<{select:[Member|null];busyChange:[boolean]}>()
 const t=(id:string,en:string)=>props.language==='id'?id:en
 const kind=ref<'phone'|'email'>('phone')
 const lookupValue=ref('')
@@ -33,7 +33,7 @@ function toggle() {
 }
 async function run() {
  if (busy.value||props.disabled) return
- busy.value=true;error.value='';feedback.value=''
+ busy.value=true;emit('busyChange',true);error.value='';feedback.value=''
  try {
   const fields={name:name.value.trim(),phone:phone.value.trim(),email:email.value.trim()}
   if(create.value) {
@@ -46,6 +46,7 @@ async function run() {
   const result=create.value
    ?await props.send('member-register',{operation_id:registrationId,...fields})
    :await props.send('member-lookup',{kind:kind.value,value:lookupValue.value.trim()})
+  if(props.disabled)return
   if(!result.member) {
    feedback.value=t('Member belum ditemukan. Periksa kontak atau pilih Daftar member.','No member found. Check the contact or choose Register member.')
    return
@@ -55,7 +56,7 @@ async function run() {
  } catch(e) {
   const code=e instanceof Error?e.message:String(e)
   error.value=codeMessage(code)+' ('+code+')'
- } finally {busy.value=false}
+ } finally {busy.value=false;emit('busyChange',false)}
 }
 </script>
 <template>
