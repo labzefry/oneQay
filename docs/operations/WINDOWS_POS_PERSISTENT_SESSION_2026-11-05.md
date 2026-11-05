@@ -1,6 +1,6 @@
 # Windows POS 0.2.8 candidate — persistent cashier sign-in and local screen lock
 
-Status: implementation candidate; not merged, deployed or published. Local execution environment is unavailable. All runtime/installer validation below is pending exact-head CI and independent implementation review. Never advertise an installer until the signed release and compatible deployed API are verified.
+Status: implementation candidate; not merged, deployed or published. Local validation on continuation: PHP syntax and SQLite persistent-session regression PASS (98 assertions including existing harness); Vue type-check/Vite build PASS; desktop cashier/QR/member/lock UI PASS; service UI PASS for laundry, boarding and homestay; shared palette tests PASS (4) and operation-timeout tests PASS (4). Native Windows compilation/DPAPI tests, MySQL, exact-head CI and final independent implementation review remain pending. Never advertise an installer until the signed release and compatible deployed API are verified.
 
 ## User outcome and scope
 
@@ -29,7 +29,7 @@ The bearer, remembered profile/identity/scope, lock/activity record and pending 
 
 On startup the native resume command first validates the saved bearer with the server. Only a genuine unavailable/interrupted transport permits cached resume within the existing offline lease. TLS/auth/permission failures are not treated as offline. Expired offline authority requires reconnection and offers resume without a new password; the remembered account is retained. Offline transaction leases remain bounded to 8 hours and are independent of remembered sign-in.
 
-Explicit logout atomically clears the remembered active profile and queues the encrypted revocation before network I/O; profile receipts and pending sales are preserved. Logout marks that profile signed out, so it cannot be silently resumed or reused offline. The next explicit sign-in after logout requires the server. Pending logout requests are flushed separately from the active profile, one bounded request per attempt. Native operations serialize profile changes with the existing store/security locks so an earlier request cannot resurrect a logged-out account.
+Explicit logout atomically clears the remembered active profile, persists a per-profile signed-out tombstone and queues the encrypted revocation before network I/O; memory is signed out before any fallible profile write. Known server authentication/permission denial uses the same tombstone-before-profile-write ordering at the common native request boundary. A failed profile write cannot resurrect the account through PIN unlock or cached offline resume. Profile receipts and pending sales are preserved. Logout marks that profile signed out, so it cannot be silently resumed or reused offline. The next explicit sign-in after logout requires the server. Pending logout requests are flushed separately from the active profile, one bounded request per attempt. Native operations serialize profile changes with the existing store/security locks so an earlier request cannot resurrect a logged-out account.
 
 ## UI and accessibility
 
@@ -37,7 +37,7 @@ The bilingual security workspace uses the existing seven-color palette, white su
 
 ## Verification required
 
-- Windows native tests: DPAPI remembered-state round trip, logout tombstone/revocation retention, invalid profile rejection, automatic lock on/off and manual lock persistence; existing transport, updater signature, offline core and installer recovery suites.
+- Windows native tests: DPAPI remembered-state round trip, logout tombstone/revocation retention, invalid profile rejection, automatic lock on/off and manual lock persistence, online/offline/401/403/TLS/expired-lease resume, and injected logout/denial profile-write failures; existing transport, updater signature, offline core and installer recovery suites.
 - SQLite and MySQL: dedicated desktop-persistent-session regression covers real login, marked authority, persistence beyond browser TTL, browser/native separation, context mismatch, unknown kind, inventory visibility, revoke-others, and disabled-cashier idempotent self-logout. Existing browser idle/absolute, session-control, desktop, service and QR tests remain required.
 - Desktop UI: duration off/save, manual lock after off, editable account switch, QR/member busy gate and exact payment retries, reconnect, bilingual and minimum-width cases.
 - Physical Windows pilot after signed build: upgrade v0.2.7 in place; retained accounts/receipts; first native v3 sign-in; close/reopen; manual/idle PIN lock; disabled auto-lock; online/offline/reconnect; owner suspension and revocation; per-vertical workflow; printer/scanner/drawer.

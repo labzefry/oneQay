@@ -37,6 +37,11 @@ $listed=array_values(array_filter($items,fn($i)=>($i['session_kind']??'')==='des
 $assert(count($listed)===1&&$listed[0]['persistent_until_logout']===true,'persistent grant remains visible until logout');
 $clock->time+=7201;
 try{$authority->assertActiveCurrent(...$browserArgs);$assert(false,'browser idle expiry removed');}catch(App\Application\Identity\FirstPartySessionAuthorityViolation){$assert(true,'browser idle expiry unchanged');}
+$absolute=$authority->issue($tenant,$identity,$a['organization'],$a['outlet'],$a['device'],$a['credential_epoch'],$a['factor_epoch'],'persistent-browser-absolute');
+$absoluteArgs=$browserArgs;$absoluteArgs[2]=$absolute->authorityId();
+$db->table('oneqay_identity_first_party_sessions')->where('tenant_id',$a['tenant'])->where('authority_id',$absolute->authorityId())->update(['expires_at_unix'=>PHP_INT_MAX]);
+$clock->time+=43201;
+try{$authority->assertActiveCurrent(...$absoluteArgs);$assert(false,'inflated browser expiry became persistent');}catch(App\Application\Identity\FirstPartySessionAuthorityViolation){$assert(true,'browser absolute TTL enforced even with inflated stored expiry');}
 $browser=$authority->issue($tenant,$identity,$a['organization'],$a['outlet'],$a['device'],$a['credential_epoch'],$a['factor_epoch'],'persistent-revoke-browser');
 $browserArgs[2]=$browser->authorityId();$authority->revokeOthers(...[...$browserArgs,'persistent-revoke-others']);
 try{$desktop->authenticate($connected['token']);$assert(false,'revoked bearer accepted');}catch(Symfony\Component\HttpKernel\Exception\HttpException){$assert(true,'revoke others terminates native grant');}

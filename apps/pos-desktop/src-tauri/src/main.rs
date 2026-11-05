@@ -225,23 +225,26 @@ async fn synchronize(
             }
         }
         {let s=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;let _=remember::flush(&s.directory);}
-        if store.snapshot().map_err(safe)?.is_some_and(|v|matches!(v.settings["business_type"].as_str(),Some("laundry"|"boarding"|"homestay"))){let(_,token)=credential(&store)?;let raw=match request(auth::SERVER,"v2/snapshot",Some(&token),None){Ok(v)=>v,Err(e)=>{if e.starts_with("POS_SIGN_IN_AGAIN")||e.starts_with("POS_PERMISSION_DENIED"){store.set("authority_state","blocked").map_err(safe)?;let mut security=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;security.signed_in=false;security.is_locked=true;}return Err(e)}};let snapshot:Snapshot=serde_json::from_value(raw).map_err(|_|"POS_SNAPSHOT_INVALID")?;store.apply_snapshot(&snapshot,now()).map_err(safe)?;return auth::visible(&sec,&store)}
+        if store.snapshot().map_err(safe)?.is_some_and(|v|matches!(v.settings["business_type"].as_str(),Some("laundry"|"boarding"|"homestay"))){
+            let(_,token)=credential(&store)?;
+            let raw=auth::request_authenticated(&store,&sec,"v2/snapshot",&token,None)?;
+            let snapshot:Snapshot=serde_json::from_value(raw).map_err(|_|"POS_SNAPSHOT_INVALID")?;
+            store.apply_snapshot(&snapshot,now()).map_err(safe)?;
+            return auth::visible(&sec,&store)
+        }
         let (_, token) = credential(&store)?;
         let batch = store.pending().map_err(safe)?;
-        let response = request(
-            auth::SERVER,
+        let response = auth::request_authenticated(
+            &store,&sec,
             "v2/sync",
-            Some(&token),
+            &token,
             Some(json!({"operations":batch})),
         );
         let result = match response {
             Ok(v) => v,
             Err(e) => {
                 if e.starts_with("POS_SIGN_IN_AGAIN") || e.starts_with("POS_PERMISSION_DENIED") {
-                    store.set("authority_state", "blocked").map_err(safe)?;
-                    let mut s = sec.lock().map_err(|_| "POS_SECURITY_BUSY")?;
-                    s.signed_in = false;
-                    s.is_locked = true;
+                    // request_authenticated already persisted denial before profile I/O.
                 } else {
                     sec.lock().map_err(|_| "POS_SECURITY_BUSY")?.offline = is_network_unavailable(&e);
                 }
@@ -269,7 +272,7 @@ async fn synchronize(
                 .map(|s| now() - s.server_time > 900)
                 .unwrap_or(true)
         {
-            let raw = request(auth::SERVER, "v2/snapshot", Some(&token), None)?;
+            let raw = auth::request_authenticated(&store,&sec,"v2/snapshot",&token,None)?;
             let snap: Snapshot =
                 serde_json::from_value(raw.clone()).map_err(|_| "POS_SNAPSHOT_INVALID")?;
             auth::refresh_pin(&store, &raw)?;

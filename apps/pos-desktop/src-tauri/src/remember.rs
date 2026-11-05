@@ -1,12 +1,13 @@
 // Author by Lab | zefry. Windows-protected resume state; never exposed to the webview.
 use crate::*;
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, path::Path};
+use std::{collections::{BTreeMap,BTreeSet}, path::Path};
 #[derive(Default, Serialize, Deserialize)]
 pub struct Remembered {
     pub active: Option<Active>,
     #[serde(default)] pub preferences: BTreeMap<String,i64>,
     #[serde(default)] pub pending_logout: Vec<String>,
+    #[serde(default)] pub signed_out_profiles: BTreeSet<String>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 pub struct Active {
@@ -44,18 +45,26 @@ pub fn save(directory:&Path,saved:&Remembered)->Result<()> {
     db.set("native_session_state",&serde_json::to_string(&bytes).map_err(|_|"POS_RESUME_STATE_INVALID")?).map_err(safe)
 }
 pub fn remember(session:&auth::Session,store:&Store)->Result<()> {
+    if !session.signed_in{return Err("POS_SIGN_IN_AGAIN".into())}
     let mut saved=load(&session.directory)?;
     let snapshot=store.snapshot().map_err(safe)?.ok_or("POS_CONNECT_FIRST")?;
     saved.active=Some(Active{profile:session.profile.clone(),login:session.login.clone(),scope:snapshot.scope,locked:session.is_locked,last_activity:session.last_activity});
+    saved.signed_out_profiles.remove(&session.profile);
     save(&session.directory,&saved)
 }
 pub fn forget(directory:&Path,token:Option<String>)->Result<()> {
     let mut saved=load(directory)?;
-    saved.active=None;
+    if let Some(active)=saved.active.take(){saved.signed_out_profiles.insert(active.profile);}
     if let Some(t)=token {
         if !saved.pending_logout.contains(&t){saved.pending_logout.push(t)}
     }
     // One atomic SQLite metadata write clears auto-resume and retains revocation before network I/O.
+    save(directory,&saved)
+}
+pub fn deny_profile(directory:&Path,profile:&str)->Result<()> {
+    let mut saved=load(directory)?;
+    if saved.active.as_ref().is_some_and(|a|a.profile==profile){saved.active=None;}
+    saved.signed_out_profiles.insert(profile.to_owned());
     save(directory,&saved)
 }
 pub fn flush(directory:&Path)->Result<()> {
@@ -92,6 +101,7 @@ mod tests {
         assert!(restored.active.unwrap().locked);assert_eq!(restored.preferences[&profile(login)],0);
         let token="a".repeat(64);forget(&dir,Some(token.clone())).unwrap();
         let logged_out=load(&dir).unwrap();assert!(logged_out.active.is_none());assert_eq!(logged_out.pending_logout,vec![token]);
+        assert!(logged_out.signed_out_profiles.contains(&profile(login)));
         let mut invalid=load(&dir).unwrap();
         invalid.active=Some(Active{profile:"../other.sqlite3".into(),login:login.into(),scope:oneqay_pos_core::Scope{tenant_id:"test".into(),identity_id:"test".into(),organization_id:"test".into(),outlet_id:"test".into(),device_id:"test".into()},locked:false,last_activity:now()});
         save(&dir,&invalid).unwrap();assert!(load(&dir).is_err());

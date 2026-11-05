@@ -51,6 +51,7 @@ const host=http.createServer((req,res)=>{let filename=path.resolve(base,'.'+new 
  await page.getByLabel('Kunci setelah tidak ada aktivitas').selectOption('0');
  await page.getByRole('button',{name:'Simpan kunci otomatis',exact:true}).click();
  await page.getByText('Pengaturan tersimpan.',{exact:true}).waitFor();
+ await page.screenshot({path:path.join(artifacts,'pos-lock-settings.png'),fullPage:true});
  if(await page.evaluate(()=>window.__SAVED_AUTO_LOCK)!==0)throw Error('Auto lock off was not saved');
  await page.getByRole('button',{name:'Kunci sekarang',exact:true}).click();
  await page.getByRole('heading',{name:'Kasir sedang dikunci.'}).waitFor();
