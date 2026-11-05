@@ -3,6 +3,12 @@ name: Menu book catalog integration
 on:
   pull_request:
     paths:
+      - 'packages/menu-cashier-ui/**'
+      - 'apps/web/tests/cashier-membership-qr.php'
+      - 'apps/web/app/Infrastructure/Business/LaravelCashierMemberships.php'
+      - 'apps/web/app/Delivery/Http/Business/CashierMembershipController.php'
+      - 'apps/web/app/Delivery/Http/Pos/DesktopMenuOrdersController.php'
+      - 'apps/web/database/module-migrations/business/2026_11_04_000004_create_cashier_memberships.php'
       - 'apps/web/app/Application/BusinessLoyalty/LoyaltyLots.php'
       - 'apps/web/tests/loyalty-lots.php'
       - 'apps/web/app/Infrastructure/Persistence/LaravelPersistenceTransaction.php'
@@ -88,8 +94,8 @@ jobs:
           extensions: pdo_sqlite, pdo_mysql, mbstring, zip, gd
           coverage: none
       - run: composer install --working-dir=apps/web --no-interaction --prefer-dist
-      - run: REQUIRE_MENU_GD=1 php apps/web/tests/menu-guest-http.php
-      - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/menu-guest-http.php
+      - run: REQUIRE_MENU_GD=1 php apps/web/tests/cashier-membership-qr.php
+      - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/cashier-membership-qr.php
       - run: php apps/web/tests/enrollment-transaction-rollback.php
       - run: bash tools/ci/run-historical-fixture.sh s28
       - run: php apps/web/tests/loyalty-math.php

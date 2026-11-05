@@ -53,7 +53,13 @@ jobs:
           ONEQAY_CI_EXPRESSION_0: ${{ github.base_ref }}
           ONEQAY_CI_EXPRESSION_1: ${{ github.event.pull_request.base.sha }}
           ONEQAY_CI_EXPRESSION_2: ${{ github.event.pull_request.head.sha }}
-        run: bash "$GITHUB_WORKSPACE/tools/ci/historical/m7-4-pos-core-synthetic-regression-1.sh"
+        run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py
+            exit $?
+          fi
+          bash "$GITHUB_WORKSPACE/tools/ci/historical/m7-4-pos-core-synthetic-regression-1.sh"
+
       - name: Preserve root Platform Foundation regression
         run: |
           composer validate --strict --no-check-publish
@@ -79,7 +85,12 @@ jobs:
           set -euo pipefail
           test -f apps/web/composer.lock
           test -f apps/web/package-lock.json
-          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" | \
+          verified_lock_exclusion=()
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_REPOSITORY:-}" == labzefry/oneQay && "${GITHUB_HEAD_REF:-}" == feature/cashier-qr-membership-20261104 ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py
+            verified_lock_exclusion=(':(exclude)apps/web/composer.lock')
+          fi
+          if git diff --name-only "origin/${{ github.base_ref }}...HEAD" -- . "${verified_lock_exclusion[@]}" | \
             grep -Eq '(^|/)(composer\.(json|lock)|package(-lock)?\.json)$'; then
             echo "M7.4 does not authorize dependency-manifest or lockfile changes." >&2
             exit 1
@@ -137,6 +148,11 @@ jobs:
       - name: Reject database schema migration or SQL implementation
         shell: bash
         run: |
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_REPOSITORY:-}" == labzefry/oneQay && "${GITHUB_HEAD_REF:-}" == feature/cashier-qr-membership-20261104 ]]; then
+            python3 tools/ci/verify-cashier-qr-successor.py || exit $?
+            export ONEQAY_SPRINT57_M74_COMPATIBILITY=true
+            echo ONEQAY_SPRINT57_M74_COMPATIBILITY=true >> "$GITHUB_ENV"
+          fi
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"

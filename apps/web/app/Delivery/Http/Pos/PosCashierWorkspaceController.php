@@ -12,6 +12,7 @@ use App\Application\Pos\ViewPosCashierWorkspace;
 use App\Delivery\Http\SafeErrorEnvelope;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -49,6 +50,8 @@ final class PosCashierWorkspaceController
                     ],
                     $snapshot->catalogItems(),
                 ),
+                'qr_orders_url'=>Route::has('business.menu-orders')?route('business.menu-orders',[],false):null,
+                'members_url'=>Route::has('business.cashier-members')?route('business.cashier-members',[],false):null,
                 'sale_endpoint' => route('pos.sales.complete', [], false),
                 'csrf_token' => csrf_token(),
                 'correlation_id' => $correlationId,

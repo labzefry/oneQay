@@ -1,0 +1,238 @@
+{
+  ".github/workflows/desktop-pos.yml": [
+    "M",
+    "c3fa499700bb9c7f7577a7110dd69e4ba206607b"
+  ],
+  ".github/workflows/m7-4-pos-core-synthetic-regression.yml": [
+    "M",
+    "b806fe5b1f2431773ab43d846f2c29258a45274d"
+  ],
+  ".github/workflows/menu-book-catalog.yml": [
+    "M",
+    "c6215095fd53e042ba19c596992260468f64004c"
+  ],
+  ".github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml": [
+    "M",
+    "ab9b2278c57a798cb80eed339f2cd7e92d23dfca"
+  ],
+  ".github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml": [
+    "M",
+    "7b6d2e49914f9ac4fa08de0670a35778136767e1"
+  ],
+  ".github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml": [
+    "M",
+    "e4b418e7d29995fee8369d13ec314fe2b700a5e7"
+  ],
+  ".github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml": [
+    "M",
+    "ca40df3125a2a9d2d8b3c39c29c03367bbc3bffc"
+  ],
+  ".github/workflows/sprint218-production-dark-deployment-execution-regression.yml": [
+    "M",
+    "7ed847928e52f92ce6a997a788a16c2db6f80d90"
+  ],
+  ".github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml": [
+    "M",
+    "fe31c326ac9596ad55af61f7ec0dd88e80b1c38e"
+  ],
+  ".github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml": [
+    "M",
+    "340b18a5e4695ebbb3769f51c718bb04bab30fbb"
+  ],
+  ".github/workflows/sprint268-dependency-security-remediation-regression.yml": [
+    "M",
+    "d1b57d2bd6b4a2da467bf489aa417100f38baa3f"
+  ],
+  ".github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml": [
+    "M",
+    "5bafb944e4090962c9106be2b546a73db50cbd78"
+  ],
+  ".github/workflows/sprint30-privileged-totp-mfa-regression.yml": [
+    "M",
+    "903cfb57b26884d2050d0400052ce01620c78e9f"
+  ],
+  ".github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml": [
+    "M",
+    "8a07b28655222e0950822df1ec2617f919835958"
+  ],
+  ".github/workflows/sprint32-authentication-recovery-proof-regression.yml": [
+    "M",
+    "7d959b13243bd983c19c457e7824a8752559979f"
+  ],
+  ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml": [
+    "M",
+    "bfde45417489ebba34563ece29417416f0f6d580"
+  ],
+  ".github/workflows/sprint34-authenticated-password-change-regression.yml": [
+    "M",
+    "954223849585419f5926d55693e162efb281cab7"
+  ],
+  ".github/workflows/sprint35-privileged-totp-recovery-regression.yml": [
+    "M",
+    "12eecc6511cbfc65feac0f6a2a55c28e5ac2b27d"
+  ],
+  ".github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml": [
+    "M",
+    "d8a3ef0e55443066fbcadbce28b0587bd50afba1"
+  ],
+  ".github/workflows/sprint37-first-party-all-session-termination-regression.yml": [
+    "M",
+    "c4e6f87535f5ef334a42cc17e8241265af6c130f"
+  ],
+  ".github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml": [
+    "M",
+    "143e37b22d06e9d9708a0e863534b0861487a248"
+  ],
+  ".github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml": [
+    "M",
+    "f02c6d098b4ef973246c7e6ee1f6807505ab746f"
+  ],
+  ".github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml": [
+    "M",
+    "0fa2ccee648f9dee10c3e92e4db9d1f5c75d9f04"
+  ],
+  ".github/workflows/sprint47-jrn004-catalog-preparation-regression.yml": [
+    "M",
+    "0839db3c31dfc98a843c1bd0597f38c01c6586b3"
+  ],
+  ".github/workflows/sprint48-jrn005-shift-register-opening-regression.yml": [
+    "M",
+    "c0f9e1d85b16281812ecec121ea3f4fa0fc3009f"
+  ],
+  ".github/workflows/sprint50-jrn007-completed-sale-void-regression.yml": [
+    "M",
+    "bf85fad2ff2f2f3f5a63f68e5ea372a00aa87c98"
+  ],
+  ".github/workflows/sprint51-jrn008-bounded-outlet-inventory-baseline-regression.yml": [
+    "M",
+    "c0c0a72b12d1f2dbcc1090ab795d26d5f0907a63"
+  ],
+  ".github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml": [
+    "M",
+    "49322bc03e7c40e73047ad457b4e3a7845927bd0"
+  ],
+  ".github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml": [
+    "M",
+    "473378d742f808bb185c0a669405de5f4ac5e32f"
+  ],
+  ".github/workflows/sprint54-jrn010-prerequisite-shift-closing-cash-evidence-regression.yml": [
+    "M",
+    "41892b8c786894dfdd12d58f05fbe9786a11b32a"
+  ],
+  "CHANGELOG.md": [
+    "M",
+    "94f2ab2fcc2b8448a165237f48a3e821ac34235e"
+  ],
+  "PROJECT_MANIFEST.md": [
+    "M",
+    "9c43844fe6d4d4198a8b7b028cafbb0d334577ff"
+  ],
+  "TASKS.md": [
+    "M",
+    "f3f10798655045855c2c1ae250a622db0bbc78cd"
+  ],
+  "apps/pos-desktop/src-tauri/src/main.rs": [
+    "M",
+    "9651923c292ab715c61074763b7670173d8cca97"
+  ],
+  "apps/pos-desktop/src-tauri/src/menu_orders.rs": [
+    "A",
+    "531c096f93a558f198f1d6c5bb52f2c4c3edbec1"
+  ],
+  "apps/pos-desktop/src/App.vue": [
+    "M",
+    "f9bcd3b840bdd6379a2e0afe18dc5cf6f4263760"
+  ],
+  "apps/pos-desktop/src/types.ts": [
+    "M",
+    "79d11265649e165b0fa2cae7615b3303ceba9f91"
+  ],
+  "apps/pos-desktop/tests/ui.cjs": [
+    "M",
+    "bb8f55cba5c849ba438562e92004d9783e86e3b2"
+  ],
+  "apps/web/app/Delivery/Http/Business/CashierMembershipController.php": [
+    "A",
+    "9e60bf37eb3f981d3a2027e5cee29dec827cabd9"
+  ],
+  "apps/web/app/Delivery/Http/Business/MenuGuestCashierController.php": [
+    "M",
+    "fb895e77d04e23cdb045dc2dddffb126d18712db"
+  ],
+  "apps/web/app/Delivery/Http/Pos/DesktopMenuOrdersController.php": [
+    "A",
+    "77f2e162f0082850ce2b55726ef3a0018b5457bb"
+  ],
+  "apps/web/app/Delivery/Http/Pos/PosCashierWorkspaceController.php": [
+    "M",
+    "e9810854c92bb481dac7dca9cc00c5ef5c656889"
+  ],
+  "apps/web/app/Infrastructure/Business/LaravelBusinessRepository.php": [
+    "M",
+    "6d32a8d5d5710e6bf209de3abcaf68fed509c3a4"
+  ],
+  "apps/web/app/Infrastructure/Business/LaravelCashierMemberships.php": [
+    "A",
+    "3812c0c3a034834c73400633f1a01b4be7fa198b"
+  ],
+  "apps/web/app/Infrastructure/Business/LaravelMenuGuestCheckout.php": [
+    "M",
+    "3dedc70138d869128e39221d4187306fb5030150"
+  ],
+  "apps/web/app/Infrastructure/Platform/ControlPlaneBusinessReset.php": [
+    "M",
+    "973d92ba56a286772e2214f890dbf9c0dd7a9452"
+  ],
+  "apps/web/app/Infrastructure/Pos/LaravelDesktopBusinessSettings.php": [
+    "M",
+    "97d85eeacce97d51001c080d2f69f5d5a1b53fb2"
+  ],
+  "apps/web/app/Providers/BusinessManagementServiceProvider.php": [
+    "M",
+    "fb165af406e0b8319bd1f3921db14a2dd7a29978"
+  ],
+  "apps/web/app/Providers/DesktopPosServiceProvider.php": [
+    "M",
+    "b24f9cb382f98798d171d27edd2be72ecca15cdd"
+  ],
+  "apps/web/composer.lock": [
+    "M",
+    "080225d366d8279d7ca27bdc558ddaa860eb80c7"
+  ],
+  "apps/web/config/cashier_membership.php": [
+    "A",
+    "75c498222b84b39b4e91d3e79b12248e99fdab59"
+  ],
+  "apps/web/database/module-migrations/business/2026_11_04_000004_create_cashier_memberships.php": [
+    "A",
+    "aa50cae33762dcda66626390f3fb59fb901c20de"
+  ],
+  "apps/web/resources/js/pages/Business/MenuGuestOrders.vue": [
+    "M",
+    "f0f726b591c7131416db382a465930af9c139da3"
+  ],
+  "apps/web/resources/js/pages/Pos/Cashier.vue": [
+    "M",
+    "f53fdcb825239f48f5f5869113d589708bfc4e1c"
+  ],
+  "apps/web/scripts/check-ui-palette.mjs": [
+    "M",
+    "03dca4a96e986d0c405d4d439b27a32807e3a944"
+  ],
+  "apps/web/tests/cashier-membership-qr.php": [
+    "A",
+    "31bcf34d072301c4038574fabe48e896c2c8a90f"
+  ],
+  "docs/operations/CASHIER_QR_MEMBERSHIP_2026-11-04.md": [
+    "A",
+    "79a237b73e3dd957029ea160f70ae527a9749cb3"
+  ],
+  "packages/menu-cashier-ui/MemberPicker.vue": [
+    "A",
+    "e99025a7b97136165f3b7c3f6821e59efa0cf991"
+  ],
+  "packages/menu-cashier-ui/MenuOrderWorkspace.vue": [
+    "A",
+    "9afcf3a875fa5058d4ec9634aa6b42c18e2871a9"
+  ]
+}

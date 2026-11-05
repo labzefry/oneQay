@@ -9,6 +9,8 @@ const files = [
   ['resources/js/components/MenuQrCard.vue',true],
   ['resources/js/pages/Business/MenuBook.vue',true],
   ['resources/js/pages/Business/MenuGuestOrders.vue',true],
+  ['../../packages/menu-cashier-ui/MenuOrderWorkspace.vue',true],
+  ['../../packages/menu-cashier-ui/MemberPicker.vue',true],
   ['resources/js/pages/Website/PublicMenuBook.vue',true],
   ['../../packages/service-pos-ui/ServicePosWorkspace.vue',true],
   ['resources/js/components/BusinessAccountMenu.vue',true],

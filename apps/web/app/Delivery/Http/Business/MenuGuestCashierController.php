@@ -59,6 +59,7 @@ final readonly class MenuGuestCashierController
             $this->access->require('pos.sale.complete');
             return Inertia::render('Business/MenuGuestOrders',[
                 'settlement_enabled'=>(bool)config('oneqay.pos_sale_completion.enabled',false),
+                'membership_enabled'=>(bool)config('cashier_membership.enabled',false),
             ]);
         });
     }
@@ -66,13 +67,18 @@ final readonly class MenuGuestCashierController
     public function lookup(Request $r):mixed
     {
         return $this->respond($r,function()use($r) {
-            $kind=BusinessInput::text($r->query('kind'),8);
+            // Retain the legacy GET for existing clients. Current clients use POST
+            // so phone numbers and QR tokens never enter access-log URLs.
+            $input=$r->isMethod('POST')?$this->payload($r):$r->query();
+            $kind=BusinessInput::text($input['kind']??null,8);
             if($kind==='qr') {
-                $token=BusinessInput::text($r->query('token'),64);
+                $token=BusinessInput::text($input['token']??null,64);
+                if ($r->isMethod('POST')) BusinessInput::fields($input,['kind','token']);
                 return response()->json(['order'=>$this->orders->findByQr($token)]);
             }
             if($kind==='phone') {
-                $phone=BusinessInput::text($r->query('phone'),17);
+                $phone=BusinessInput::text($input['phone']??null,17);
+                if ($r->isMethod('POST')) BusinessInput::fields($input,['kind','phone']);
                 return response()->json(['orders'=>$this->orders->findByPhone($phone)]);
             }
             throw new BusinessViolation('ORDER_LOOKUP_INVALID');
@@ -84,6 +90,7 @@ final readonly class MenuGuestCashierController
         return $this->respond($r,function()use($r) {
             $p=$this->payload($r);
             BusinessInput::fields($p,['order_id'],['selected_lines']);
+            if (isset($p['selected_lines']) && !is_array($p['selected_lines'])) throw new BusinessViolation('INVALID_LINES');
             $id=BusinessInput::text($p['order_id'],32);
             return response()->json(['quote'=>$this->checkout->quote($id,$p['selected_lines']??null)]);
         });

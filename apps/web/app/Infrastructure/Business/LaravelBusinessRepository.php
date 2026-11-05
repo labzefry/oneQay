@@ -69,6 +69,17 @@ final readonly class LaravelBusinessRepository implements BusinessRepository
     {
         if (in_array($resource, ['events', 'journals', 'receipts', 'settlements', 'interactions'], true)) throw new BusinessViolation('IMMUTABLE_RECORD', 409);
         foreach (['tenant_id', 'organization_id', 'outlet_id', 'id', 'created_by', 'created_at_unix'] as $key) if (array_key_exists($key, $data)) throw new BusinessViolation('IMMUTABLE_SCOPE');
+        if ($resource==='partners' && (isset($data['phone']) || isset($data['email']))
+            && $this->db->getSchemaBuilder()->hasTable('oneqay_cashier_memberships')) {
+            $previous=$this->find($scope,'partners',$id,true);
+            $contactChanged=(isset($data['phone']) && $data['phone']!==$previous['phone'])
+                || (isset($data['email']) && strcasecmp($data['email'],$previous['email'])!==0);
+            if ($contactChanged && $this->db->table('oneqay_cashier_memberships')
+                ->where('tenant_id',$scope->tenantId()->value())->where('organization_id',$scope->organizationId()->value())
+                ->where('outlet_id',$scope->outletId()->value())->where('customer_id',$id)->exists()) {
+                throw new BusinessViolation('MEMBER_CONTACT_CHANGE_REQUIRES_VERIFICATION',409);
+            }
+        }
         $count = $this->query($scope, $resource)->where('id', $id)->where('version', $version)->update(array_merge($this->encode($data), ['version' => $version + 1, 'updated_at_unix' => time()]));
         if ($count !== 1) throw new BusinessViolation('RECORD_CHANGED', 409);
         return $this->find($scope, $resource, $id);
