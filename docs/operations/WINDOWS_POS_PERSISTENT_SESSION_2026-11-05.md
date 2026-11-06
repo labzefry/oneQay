@@ -84,3 +84,13 @@ Continue after the narrowly scoped CI repair PR passes and is merged. Prepare th
 
 
 Local validation of the postmerge classifier repair: six regression test methods PASS in a disposable worktree; Sprint253 YAML parses, all five run blocks pass Bash syntax and size limits, and `git diff --check` passes. No application, migration, signed-release workflow or operational-state file changed. Independent source review and fresh PR Actions are required before this CI repair merges; deployment and signed publication remain pending.
+
+
+## PR997 exact-source continuation
+
+The initialb9635a72 candidate completed100 Actions runs:96 passed and4 rejected the CI-only changed-path set (Sprint35/36/37 and Sprint268 historical source envelopes). The follow-up source proof pins PR997/internal branch/basef628, or its one-time squash push fromf628 on main, and exactly14 owned CI/documentation paths with status/mode/blob/worktree binding. All other committed paths, application/dependency/runtime worktrees and operational state remain frozen; hidden assume-unchanged runtime drift is rejected. The new proof selects the existing isolated Sprint35/36/37/TOTP fixtures and replaces only old whole-PR path classification. Dependency floors, advisory checks, full application regressions and operational assertions remain active. Sprint253 continues its stale-state scan and exempts only the old full-PR diagnostic after this proof, including after squash.
+
+Ten local regression methods PASS, including real Git CI-only fixtures and rejection of runtime-only pushes with zero Sprint workflow changes. Existing frozen TOTP/session fixtures are replayed separately; no original fixture or historical runner changed. All64 run blocks in the five affected workflows parse and meet size limits. Fresh exact-head PR checks, final independent review and merge remain required before hosting deployment; the Cloudflare/API and signed-publication handoff above remains unchanged.
+
+
+Final local PR997 repair evidence: the four mandatory source-proof steps, preserved current-base fixture hashes, dependency floors/migration history and operational assertions passed in12 executed workflow bodies. Sixteen fixture/source-path routing conditions were checked under the actual PR997 job environments. Existing isolated Sprint35 recovery, Sprint30 MFA, Sprint36 inventory/revocation and Sprint37 all-session termination fixtures each produced their original PASS marker. The real Sprint253 scanner accepted both the PR997 candidate and its simulated squash push fromf628, while negative tests rejected app-only pushes with no Sprint workflow changes. These are local rehearsals; the next exact-head Actions must pass before merge/deployment.

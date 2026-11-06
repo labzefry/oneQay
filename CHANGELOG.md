@@ -1,6 +1,6 @@
 ## 2026-11-06 — PR996 merged; deployment handoff
 
-Windows 0.2.8 native persistent sign-in and lock controls merged in PR #996 at `f628b946` (reviewed tree preserved; 141 exact-head PR runs and owner authority passed). Postmerge web certification/publication succeeded. A narrowly scoped historical-CI source classifier repair is in progress; signed Windows publication correctly stopped at public API verification because Cloudflare returned a managed challenge. Hosted backend activation and the signed Windows update remain pending. See [source, validation and deployment handoff](docs/operations/WINDOWS_POS_PERSISTENT_SESSION_2026-11-05.md).
+Windows 0.2.8 native persistent sign-in and lock controls merged in PR #996 at `f628b946` (reviewed tree preserved; 141 exact-head PR runs and owner authority passed). Postmerge web certification/publication succeeded. PR #997 initially passed 96 of 100 checks; its four historical source-envelope failures now have a bounded 14-path CI-only proof with runtime frozen and original functional/security tests retained. Exact-head requalification is pending; signed Windows publication correctly stopped at public API verification because Cloudflare returned a managed challenge. Hosted backend activation and the signed Windows update remain pending. See [source, validation and deployment handoff](docs/operations/WINDOWS_POS_PERSISTENT_SESSION_2026-11-05.md).
 
 ## 2026-11-05 — Windows POS 0.2.8 candidate: persistent cashier login and lock controls
 
