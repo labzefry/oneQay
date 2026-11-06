@@ -377,8 +377,8 @@ jobs:
           ONEQAY_CI_EXPRESSION_1: ${{ github.event.pull_request.base.sha }}
           ONEQAY_CI_EXPRESSION_2: ${{ github.event.pull_request.head.sha }}
         run: |
-          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' ]]; then
-            python3 tools/ci/verify-cashier-qr-successor.py
+          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && ( "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' || "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ) ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py
             exit $?
           fi
           bash "$GITHUB_WORKSPACE/tools/ci/historical/sprint36-first-party-session-inventory-revocation-regression-4.sh"

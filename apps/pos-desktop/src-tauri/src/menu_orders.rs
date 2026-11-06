@@ -24,16 +24,7 @@ pub async fn menu_order(
         let (_, token) = credential(&store)?;
         // Use the pinned first-party server. Neither URL nor credentials come from the webview.
         let path = format!("v3/menu-orders/{action}");
-        let response = request(auth::SERVER, &path, Some(&token), Some(input));
-        if let Err(ref error) = response {
-            if error.starts_with("POS_SIGN_IN_AGAIN") || error.starts_with("POS_PERMISSION_DENIED") {
-                store.set("authority_state", "blocked").map_err(safe)?;
-                let mut session = sec.lock().map_err(|_| "POS_SECURITY_BUSY")?;
-                session.signed_in = false;
-                session.is_locked = true;
-            }
-        }
-        response
+        auth::request_authenticated(&store,&sec,&path,&token,Some(input))
     })
     .await
 }

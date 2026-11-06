@@ -19,6 +19,8 @@ if($engine==='mysql'){if($db->getDatabaseName()!=='oneqay_merchandising_test')th
 $n=0;$assert=static function(bool $v,string $why)use(&$n):void{if(!$v)throw new RuntimeException('FAIL: '.$why);$n++;};$reject=static function(callable $f,string $why)use($assert):void{try{$f();}catch(BusinessViolation|DurableAuthorizationViolation|Illuminate\Database\QueryException|App\Application\Persistence\DurablePersistenceViolation $e){$assert(true,$why);return;}$assert(false,$why);};
 foreach(['organizations','outlets','identities','devices']as$table)Schema::create('oneqay_'.$table,static function(Blueprint $t):void{$t->string('tenant_id',64);$t->string('id',96);$t->primary(['tenant_id','id']);});
 foreach([16,17,19,20,21]as$num){$files=glob(__DIR__.'/../database/migrations/0000_00_00_'.str_pad((string)$num,6,'0',STR_PAD_LEFT).'_*.php');(require $files[0])->up();}
+// POS module migration dependencies include the canonical session foundation.
+(require glob(__DIR__.'/../database/migrations/0000_00_00_000013_*.php')[0])->up();
 foreach(glob(__DIR__.'/../database/module-migrations/pos/*.php')as$file)(require $file)->up();
 (require __DIR__.'/../database/module-migrations/business/2026_10_12_000001_create_integrated_business_management.php')->up();
 (require __DIR__.'/../database/module-migrations/business/2026_10_14_000001_create_merchandising_and_currency_preferences.php')->up();

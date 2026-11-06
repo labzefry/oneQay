@@ -55,11 +55,30 @@ final readonly class LaravelDesktopPosService
  private function activate(array $a):void {
   try{
    $tenant=TenantId::fromString($a['tenant']);$identity=PlatformIdentityId::fromString($a['identity']);
-   $this->sessions->assertActiveCurrent($tenant,$identity,$a['session'],$a['organization'],$a['outlet'],$a['device'],$a['credential_epoch'],$a['factor_epoch']);
+   $this->sessions->{(($a['desktop_persistent']??false)===true?'assertPersistentDesktopCurrent':'assertActiveCurrent')}($tenant,$identity,$a['session'],$a['organization'],$a['outlet'],$a['device'],$a['credential_epoch'],$a['factor_epoch']);
    abort_unless($this->eligibility->isEligible($tenant,$identity),401);
+   if (($a['desktop_persistent']??false)===true) {
+    abort_unless($this->db->table('oneqay_desktop_cashiers')->where('tenant_id',$a['tenant'])->where('identity_id',$a['identity'])->where('organization_id',$a['organization'])->where('outlet_id',$a['outlet'])->where('device_id',$a['device'])->where('enabled',true)->exists(),401);
+    $business=$this->db->table('oneqay_platform_businesses')->where('tenant_id',$a['tenant'])->first(['status']);
+    abort_unless($business&&$business->status==='active',401);
+   }
    $verified=new ServerVerifiedTenantContext($tenant);$this->tenants->setVerified($verified);
    $this->enter->enter(new ServerVerifiedPlatformIdentity($identity),$verified,$a['organization'],$a['outlet'],$a['device']);
   }catch(\Throwable $e){$this->clear();abort(401,'Desktop authorization must be renewed.');}
+ }
+ public function logoutPersistent(string $token,string $correlation):array {
+  abort_unless(preg_match('/\\A[a-f0-9]{64}\\z/D',$token),401);
+  return $this->db->transaction(function()use($token,$correlation):array {
+   $q=$this->db->table('oneqay_desktop_credentials')->where('token_hash',hash('sha256',$token));$row=(clone$q)->lockForUpdate()->first();
+   if(!$row||$row->revoked_at!==null)return ['logged_out'=>true];
+   $a=json_decode($this->cipher->decryptString($row->authority),true,32,JSON_THROW_ON_ERROR);
+   // Self-revocation requires possession only; disabled/expired sessions must also be terminable.
+   $this->db->table('oneqay_identity_first_party_sessions')->where('tenant_id',$a['tenant'])->where('identity_id',$a['identity'])->where('authority_id',$a['session'])->whereNull('revoked_at_unix')->update(['revoked_at_unix'=>time()]);
+   $q->update(['revoked_at'=>time()]);
+   $this->db->table('oneqay_identity_first_party_session_audit')->insert(['tenant_id'=>$a['tenant'],'audit_id'=>bin2hex(random_bytes(16)),'identity_id'=>$a['identity'],'actor_authority_id'=>$a['session'],'target_authority_id'=>$a['session'],'event_type'=>'session_logout','correlation_id'=>substr($correlation,0,128),'occurred_at_unix'=>time()]);
+   // Offline receipts/leases are retained for authorized reconciliation, never deleted at logout.
+   return ['logged_out'=>true];
+  });
  }
  public function clear():void {$this->contexts->clear();$this->tenants->clear();}
  public function context():VerifiedOrganizationalContext {return $this->contexts->current()??throw new InvalidArgumentException('Missing context.');}

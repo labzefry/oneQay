@@ -81,6 +81,18 @@ jobs:
           npm run tauri -- build --ci --config '{"bundle":{"createUpdaterArtifacts":true}}' --target x86_64-pc-windows-msvc -- --locked
           if ($LASTEXITCODE -ne 0) { throw 'Signed build failed' }
       - run: cargo test --release --locked --target x86_64-pc-windows-msvc --manifest-path src-tauri/Cargo.toml
+      - name: Require compatible deployed native API before publishing the update
+        run: |
+          $source = git rev-parse HEAD
+          $native = Get-Content src-tauri/src/auth.rs -Raw
+          $match = [regex]::Match($native, 'pub const SERVER: &str = "(https://[^"]+)";')
+          if (-not $match.Success) { throw 'Native server configuration missing' }
+          $server = [uri]$match.Groups[1].Value
+          if ($server.Scheme -ne 'https' -or $server.UserInfo -or $server.Query -or $server.Fragment) { throw 'Invalid native server configuration' }
+          $capabilities = Invoke-RestMethod -Uri ($server.AbsoluteUri.TrimEnd('/') + '/api/pos/desktop/v3/capabilities') -TimeoutSec 20 -MaximumRedirection 0
+          if ($capabilities.persistent_native_session -ne $true -or $capabilities.source -ne $source) {
+            throw 'Deploy this exact certified backend and its additive native-session migration before publishing the Windows patch. Existing signed releases remain unchanged.'
+          }
       - name: Publish signed assets, then stable manifest
         env:
           GH_TOKEN: ${{ github.token }}

@@ -66,8 +66,8 @@ jobs:
         if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
-          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' ]]; then
-            python3 tools/ci/verify-cashier-qr-successor.py
+          if [[ "${GITHUB_EVENT_NAME:-}" == 'pull_request' && "${GITHUB_REPOSITORY:-}" == 'labzefry/oneQay' && ( "${GITHUB_HEAD_REF:-}" == 'feature/cashier-qr-membership-20261104' || "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ) ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py
             exit $?
           fi
           set -euo pipefail
@@ -203,8 +203,8 @@ jobs:
         if: (github.event_name == 'pull_request') && (github.event_name != 'pull_request' || github.head_ref != 'production-merchant-commercial-go-live-integrated-20261009')
         shell: bash
         run: |
-          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_REPOSITORY:-}" == labzefry/oneQay && "${GITHUB_HEAD_REF:-}" == feature/cashier-qr-membership-20261104 ]]; then
-            python3 tools/ci/verify-cashier-qr-successor.py
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_REPOSITORY:-}" == labzefry/oneQay && ( "${GITHUB_HEAD_REF:-}" == feature/cashier-qr-membership-20261104 || "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ) ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py
             exit $?
           fi
           set -euo pipefail

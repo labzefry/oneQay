@@ -29,9 +29,7 @@ fn write(store: &Store, events: &[Value]) -> Result<()> {
         .map_err(safe)
 }
 fn checked_request(store:&Store,sec:&auth::Security,path:&str,token:&str,body:Option<Value>)->Result<Value>{
- let result=request(auth::SERVER,path,Some(token),body);
- if let Err(ref e)=result{if e.starts_with("POS_SIGN_IN_AGAIN")||e.starts_with("POS_PERMISSION_DENIED"){store.set("authority_state","blocked").map_err(safe)?;let mut security=sec.lock().map_err(|_|"POS_SECURITY_BUSY")?;security.signed_in=false;security.is_locked=true;}}
- result
+ auth::request_authenticated(store,sec,path,token,body)
 }
 fn flush(store: &Store, sec: &auth::Security) -> Result<()> {
     let (_, token) = credential(store)?;
@@ -64,10 +62,7 @@ fn flush(store: &Store, sec: &auth::Security) -> Result<()> {
             }
             Err(e) => {
                 if e.starts_with("POS_SIGN_IN_AGAIN") || e.starts_with("POS_PERMISSION_DENIED") {
-                    store.set("authority_state", "blocked").map_err(safe)?;
-                    let mut s = sec.lock().map_err(|_| "POS_SECURITY_BUSY")?;
-                    s.signed_in = false;
-                    s.is_locked = true;
+                    // The common native request boundary already persisted denial.
                 } else if e.starts_with("POS_OPEN_SHIFT_AND_PREPARE_CATALOG")
                     || e.starts_with("POS_SERVICE_REQUEST_REJECTED")
                 {

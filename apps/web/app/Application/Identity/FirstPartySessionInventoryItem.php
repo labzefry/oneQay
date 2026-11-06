@@ -16,12 +16,13 @@ final readonly class FirstPartySessionInventoryItem
         public int $issuedAtUnix,
         public int $lastSeenAtUnix,
         public int $expiresAtUnix,
+        public bool $persistentDesktop = false,
     ) {}
 
     /** @return array{handle:string,current:bool,organization_id:string,outlet_id:?string,device_id:?string,issued_at_unix:int,last_seen_at_unix:int,expires_at_unix:int} */
     public function toArray(): array
     {
-        return [
+        $result = [
             'handle' => $this->handle,
             'current' => $this->current,
             'organization_id' => $this->organizationId,
@@ -31,5 +32,10 @@ final readonly class FirstPartySessionInventoryItem
             'last_seen_at_unix' => $this->lastSeenAtUnix,
             'expires_at_unix' => $this->expiresAtUnix,
         ];
+        if ($this->persistentDesktop) {
+            $result['session_kind'] = 'desktop_persistent';
+            $result['persistent_until_logout'] = true;
+        }
+        return $result;
     }
 }

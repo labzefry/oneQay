@@ -1,0 +1,394 @@
+{
+  ".github/workflows/desktop-pos.yml": [
+    "M",
+    "f542b0eb293ded772a949eabea490704fdd4d5c7"
+  ],
+  ".github/workflows/m7-2-tenant-isolation-regression.yml": [
+    "M",
+    "7290e53554878c05b3eec12125fea87c249e0630"
+  ],
+  ".github/workflows/m7-3-identity-org-context-regression.yml": [
+    "M",
+    "c8c284cbd432878ede99abc71200dfe0fabc3034"
+  ],
+  ".github/workflows/m7-4-pos-core-synthetic-regression.yml": [
+    "M",
+    "2998f124956878a9820cab6ff214363ec23d50e3"
+  ],
+  ".github/workflows/m7-4a-technical-preview-interaction-regression.yml": [
+    "M",
+    "111e4a5c87dd318eeb11d3365058da40ac508a33"
+  ],
+  ".github/workflows/m7-5-preview-db-qualification-regression.yml": [
+    "M",
+    "f5c66deb392c36aa6ca9e147a94e0d05c4ccb1a9"
+  ],
+  ".github/workflows/menu-book-catalog.yml": [
+    "M",
+    "b0412bacc8a708c2b108df95c8f9402f1e5818a7"
+  ],
+  ".github/workflows/sprint121-final-shift-close-runtime-binding-manifest-control-channel.yml": [
+    "M",
+    "01856a472add6a7f684b41e091d1bda3ab91705b"
+  ],
+  ".github/workflows/sprint122-final-shift-close-runtime-binding-manifest-write-once-cas.yml": [
+    "M",
+    "6d48e0d3ca85edfd13592728b62f2307c210395e"
+  ],
+  ".github/workflows/sprint123-final-shift-close-runtime-binding-manifest-control-plane-registration.yml": [
+    "M",
+    "3631d6141836d243d1723e8017abdeed8e567d02"
+  ],
+  ".github/workflows/sprint124-final-shift-close-runtime-db-binding-attestation-control-plane-registration.yml": [
+    "M",
+    "2d5a62c16d0bdaf6bcf39dd6fe9da991aec4d6b9"
+  ],
+  ".github/workflows/sprint125-final-shift-close-runtime-db-binding-attestation-control-plane-regression.yml": [
+    "M",
+    "0b51658bb594f927b335fcd0ad016ac1da8080e3"
+  ],
+  ".github/workflows/sprint126-final-shift-close-runtime-binding-manifest-control-plane-token-hardening.yml": [
+    "M",
+    "feba3fc7bf04a1cb54ccd8bc99b37b012b57728d"
+  ],
+  ".github/workflows/sprint127-final-shift-close-runtime-binding-manifest-control-plane-regression.yml": [
+    "M",
+    "d3894a50c756424d1f78027e13918dba9f9f32c4"
+  ],
+  ".github/workflows/sprint128-final-shift-close-runtime-control-plane-token-character-policy.yml": [
+    "M",
+    "f6e08746b7520a1698baab841118798de12fee29"
+  ],
+  ".github/workflows/sprint130-final-shift-close-canonical-runtime-control-plane-token-policy.yml": [
+    "M",
+    "b726875e8a9a6ca07489b9395d6dbca3744cfff2"
+  ],
+  ".github/workflows/sprint131-final-shift-close-canonical-control-plane-positive-path-regression.yml": [
+    "M",
+    "f49bca375d2300427b98fe6aae4f5b24ab965af7"
+  ],
+  ".github/workflows/sprint132-final-shift-close-canonical-control-plane-controller-positive-path-regression.yml": [
+    "M",
+    "40ea96ce86ce2ebfa00a734f866c935d3a5d7129"
+  ],
+  ".github/workflows/sprint133-final-shift-close-canonical-control-plane-controller-fail-closed-regression.yml": [
+    "M",
+    "281fd55a296f3ad68f251d5bfcedd6f2a4125a1a"
+  ],
+  ".github/workflows/sprint21-role-permission-policy-regression.yml": [
+    "M",
+    "c9d0ef46a38db7a7bbb51f8ea659ca7dc022abab"
+  ],
+  ".github/workflows/sprint211-durable-staging-operator-artifact-publication-regression.yml": [
+    "M",
+    "43e2766013cc09a7fe93a53829138312521fac80"
+  ],
+  ".github/workflows/sprint212-cpanel-no-ssh-durable-staging-target-qualification-regression.yml": [
+    "M",
+    "d2884c191e596aa06d0ac0ac2420cc40f6ff2374"
+  ],
+  ".github/workflows/sprint213-cpanel-no-ssh-operator-qualification-kit-publication-regression.yml": [
+    "M",
+    "d3d745c7547ddbdcaeedebdc75e22b0927a5c657"
+  ],
+  ".github/workflows/sprint214-cpanel-no-ssh-guarded-deployment-execution-regression.yml": [
+    "M",
+    "d47d2f33b789fb168262ddb677cf454835471430"
+  ],
+  ".github/workflows/sprint218-production-dark-deployment-execution-regression.yml": [
+    "M",
+    "89053b924f95fdf243bb6f95468b9b8f5d075152"
+  ],
+  ".github/workflows/sprint22-policy-administration-regression.yml": [
+    "M",
+    "2b80ca3c689c82b6b4e9739a713d36c61d97a4f3"
+  ],
+  ".github/workflows/sprint222-cpanel-fixed-public-php-symlink-policy-fallback-regression.yml": [
+    "M",
+    "30eae3265e8319e05b28db45f37f7dde03f555cc"
+  ],
+  ".github/workflows/sprint223-durable-runtime-ingestion-null-boundary-regression.yml": [
+    "M",
+    "023faef775b708f883a3de8c25dfe69947377b0b"
+  ],
+  ".github/workflows/sprint23-initial-tenant-admin-provisioning-regression.yml": [
+    "M",
+    "b017da221f680ccc1a92d64654a96571407d9da9"
+  ],
+  ".github/workflows/sprint24-protected-control-admin-lifecycle-regression.yml": [
+    "M",
+    "f67d1e4b1a0a3c624d83abe815128d9b7f3f2992"
+  ],
+  ".github/workflows/sprint25-policy-administration-delivery-regression.yml": [
+    "M",
+    "f6a606d55f2738108874544b305645236e79c8af"
+  ],
+  ".github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml": [
+    "M",
+    "f78f221673291360dec64a0e2486637fdd5097a9"
+  ],
+  ".github/workflows/sprint26-identity-credential-verification-regression.yml": [
+    "M",
+    "2b814208489a135c770e671f6922f46a2641cf25"
+  ],
+  ".github/workflows/sprint268-dependency-security-remediation-regression.yml": [
+    "M",
+    "1a65172d896dec4a09822e2203d3dcd5672f779b"
+  ],
+  ".github/workflows/sprint27-first-party-session-establishment-regression.yml": [
+    "M",
+    "0c399c46aeaae62aa378103564be3009e454ee6d"
+  ],
+  ".github/workflows/sprint28-initial-password-enrollment-regression.yml": [
+    "M",
+    "e11adae6614d227593e1b274ff2e1c9cd2a1c96a"
+  ],
+  ".github/workflows/sprint29-first-control-principal-credential-bootstrap-regression.yml": [
+    "M",
+    "86898fb8ead2858ff971339710653007272d3c3b"
+  ],
+  ".github/workflows/sprint30-privileged-totp-mfa-regression.yml": [
+    "M",
+    "dbad8a958fcc1cd1fbafd9c46c42bdf2938673ed"
+  ],
+  ".github/workflows/sprint31-privileged-reauthentication-step-up-regression.yml": [
+    "M",
+    "a58a539b6ae36805f2975e223dad91e9ee960a7a"
+  ],
+  ".github/workflows/sprint32-authentication-recovery-proof-regression.yml": [
+    "M",
+    "4caaf3841f372d32e8cdd0c4bac73f7c3af03765"
+  ],
+  ".github/workflows/sprint33-recovery-bound-password-reset-regression.yml": [
+    "M",
+    "11a141f056878e7dbdf806408b1551e3f7169aab"
+  ],
+  ".github/workflows/sprint34-authenticated-password-change-regression.yml": [
+    "M",
+    "4acc4960871afb71b44df54cc8efebc42f3d6511"
+  ],
+  ".github/workflows/sprint35-privileged-totp-recovery-regression.yml": [
+    "M",
+    "27482b74df25e52f8c74c2e1268f91b20adb3742"
+  ],
+  ".github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml": [
+    "M",
+    "2e665a858ad119e9d45e7cbb3cd20a2b3dd55b89"
+  ],
+  ".github/workflows/sprint37-first-party-all-session-termination-regression.yml": [
+    "M",
+    "9cd575202179fcd95a276e47746cfbd07e5dd12a"
+  ],
+  ".github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml": [
+    "M",
+    "dba5837c062bbabd54547e2650167fb070b131a4"
+  ],
+  ".github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml": [
+    "M",
+    "6b6a027dc66a8b84669430ae10bf558c3a0176f5"
+  ],
+  ".github/workflows/sprint46-jrn006-durable-sale-completion-regression.yml": [
+    "M",
+    "c3681b4af0f64357b35d4d6ec2c1fccf5883b4f2"
+  ],
+  ".github/workflows/sprint47-jrn004-catalog-preparation-regression.yml": [
+    "M",
+    "f21faa6d14d3495e4c5cdf1edd658a25c8251e99"
+  ],
+  ".github/workflows/sprint48-jrn005-shift-register-opening-regression.yml": [
+    "M",
+    "f34858fb01b8096a1b36b31408c8eb8c88821c1d"
+  ],
+  ".github/workflows/sprint50-jrn007-completed-sale-void-regression.yml": [
+    "M",
+    "3bcdc77abd7bd6a611b3dc9b031e2ddeebbd25ff"
+  ],
+  ".github/workflows/sprint51-jrn008-bounded-outlet-inventory-baseline-regression.yml": [
+    "M",
+    "0bba9e6864f323f36e789a8bfbd2155fd366396f"
+  ],
+  ".github/workflows/sprint52-jrn007-bounded-full-cash-refund-regression.yml": [
+    "M",
+    "275e563860505660ff4ed542102abd9eb2bf87c8"
+  ],
+  ".github/workflows/sprint53-jrn010-prerequisite-shift-opening-cash-evidence-regression.yml": [
+    "M",
+    "651025d88166e21060146bc86b68997638ab3b7b"
+  ],
+  ".github/workflows/sprint54-jrn010-prerequisite-shift-closing-cash-evidence-regression.yml": [
+    "M",
+    "57340064c172eaffae499bfdd01bb1efb054713f"
+  ],
+  ".github/workflows/windows-pos-release.yml": [
+    "M",
+    "8d01c12d49e807b34a79fa7065114571d40153d9"
+  ],
+  "API_SPEC.md": [
+    "M",
+    "ce62593ed8e269027e61b59f01c98f6d028c67e6"
+  ],
+  "CHANGELOG.md": [
+    "M",
+    "bad3cce0416393bb322c5aefd79d7c4ca7f137ed"
+  ],
+  "DATABASE.md": [
+    "M",
+    "73cd1117858c1f6f0f2cf6697acc8d993090e517"
+  ],
+  "PROJECT_MANIFEST.md": [
+    "M",
+    "3bbe3104c9d3c9941d13dc2755596101d56130b9"
+  ],
+  "SECURITY.md": [
+    "M",
+    "74a49a0b8e3a81a1e6d4ee82fdd3bbcb7a3c69c2"
+  ],
+  "TASKS.md": [
+    "M",
+    "857e7f31989012b04a7438fb7b2a2aebb78bc4eb"
+  ],
+  "TESTING.md": [
+    "M",
+    "9a200d4b3e6140408cfabf9ef49efe6a2990d2ca"
+  ],
+  "UPDATER.md": [
+    "M",
+    "e09adda6c1b7fd334fe4f68c68462f5cacd3ff59"
+  ],
+  "apps/pos-desktop/package-lock.json": [
+    "M",
+    "cc127f82ed7c1b233be9e68db8b4195ca98a0c7e"
+  ],
+  "apps/pos-desktop/package.json": [
+    "M",
+    "14a2748313bc0302cf9e2aea7ea9afb2b8211f7b"
+  ],
+  "apps/pos-desktop/src-tauri/Cargo.lock": [
+    "M",
+    "995d860f217bfdb079f59b84b92cc9f6f88bdfdb"
+  ],
+  "apps/pos-desktop/src-tauri/Cargo.toml": [
+    "M",
+    "f0a37a9b368b2e625301746155e404e7ed4ad52a"
+  ],
+  "apps/pos-desktop/src-tauri/src/auth.rs": [
+    "M",
+    "dfd39ea6c5f8b4d37c898a94787627589e2dbc28"
+  ],
+  "apps/pos-desktop/src-tauri/src/main.rs": [
+    "M",
+    "e79009acac78bcf35eee316baa05f89f98db068b"
+  ],
+  "apps/pos-desktop/src-tauri/src/menu_orders.rs": [
+    "M",
+    "e609c213f37684db22a7cfd554626c876cc64ebb"
+  ],
+  "apps/pos-desktop/src-tauri/src/remember.rs": [
+    "A",
+    "e3103856dbb88f675a5659218fe06d790bea4bca"
+  ],
+  "apps/pos-desktop/src-tauri/src/service_pos.rs": [
+    "M",
+    "bebc87d26e4e5da8eb17dc75e1b9bfaa17ac8fff"
+  ],
+  "apps/pos-desktop/src-tauri/tauri.conf.json": [
+    "M",
+    "3d67168bd4c9e4c9de62ec1c65a9e41a6ab4f533"
+  ],
+  "apps/pos-desktop/src/App.vue": [
+    "M",
+    "63dd5859dff3a28f1fc2c8205ca45cd5aa55c596"
+  ],
+  "apps/pos-desktop/src/SecuritySettings.vue": [
+    "A",
+    "02645d72382a1c90330a9c9e7b8989c8b66662cb"
+  ],
+  "apps/pos-desktop/src/types.ts": [
+    "M",
+    "22f029ce662edbd077b25843c9ecac865150bb02"
+  ],
+  "apps/pos-desktop/tests/service-ui.cjs": [
+    "M",
+    "693739042cf16756d9df2353958d5fdf4553e5fd"
+  ],
+  "apps/pos-desktop/tests/ui.cjs": [
+    "M",
+    "ff44b421d869a1f9b4cd04e377329878167fe6aa"
+  ],
+  "apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php": [
+    "M",
+    "a5b0497f004668b438d39298120ad5bdad0f34d7"
+  ],
+  "apps/web/app/Application/Identity/FirstPartySessionInventoryItem.php": [
+    "M",
+    "7a39446772dc2062b4b63884428c3d6393ff7ad6"
+  ],
+  "apps/web/app/Application/Identity/PersistentDesktopSessionAuthorityRepository.php": [
+    "A",
+    "ca05aa9140b6b23557e7a095d2905b0244b7950a"
+  ],
+  "apps/web/app/Delivery/Console/ExactSecretInput.php": [
+    "A",
+    "68aeeb55ae0ab220b2336d9c20bd54186c50f1a8"
+  ],
+  "apps/web/app/Delivery/Http/Pos/DesktopEnterpriseController.php": [
+    "M",
+    "ce53dc1cced96b581ed6fdd2ea567d16031a63bb"
+  ],
+  "apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php": [
+    "M",
+    "2670ed70c91f3464fa4e8af2209585abfaec9be1"
+  ],
+  "apps/web/app/Infrastructure/Pos/LaravelDesktopCashierLogin.php": [
+    "M",
+    "4470037a50a750ad8cf5e90a48e625eb54c457cc"
+  ],
+  "apps/web/app/Infrastructure/Pos/LaravelDesktopPosService.php": [
+    "M",
+    "d8e6fdf2526699901a7e926f55ff1dba604b0bbc"
+  ],
+  "apps/web/app/Providers/DesktopPosServiceProvider.php": [
+    "M",
+    "5d35d2d77d2460d476f893b622609cf03f28ff80"
+  ],
+  "apps/web/database/module-migrations/pos/2026_11_05_000001_add_persistent_desktop_session_kind.php": [
+    "A",
+    "60104470994fb0a26fa038ec6c41a670dbb0af85"
+  ],
+  "apps/web/routes/console.php": [
+    "M",
+    "624efdbbee823335c42760bb7548677efadd6e13"
+  ],
+  "apps/web/tests/desktop-persistent-session.php": [
+    "A",
+    "c65980b75d5f9c52f219667701ab8b00773bc2a2"
+  ],
+  "apps/web/tests/first-control-principal-credential-bootstrap-current.php": [
+    "A",
+    "fb2c3caefbf602e39a750b3d6df035f9a0a1d72a"
+  ],
+  "apps/web/tests/integrated-business-management.php": [
+    "M",
+    "5a72690780beadcb15c86eb07935ac76f8b93b01"
+  ],
+  "apps/web/tests/merchandising-reports-currency.php": [
+    "M",
+    "849646d535a0df9df5185249b1936782ece20720"
+  ],
+  "docs/operations/WINDOWS_POS_PERSISTENT_SESSION_2026-11-05.md": [
+    "A",
+    "eb648e345412500112ef1f4ff62ce9c4fadee74a"
+  ],
+  "tools/ci/run-desktop-historical-fixture.sh": [
+    "A",
+    "086fc392c323f8e122ec0beeb9d7f496cd35bdd7"
+  ],
+  "tools/ci/sprint253-successor-compatibility.sh": [
+    "A",
+    "5485cee35108b13d35fc02f88191c8a69c61aa5b"
+  ],
+  "tools/qa-merchandising-ui.mjs": [
+    "M",
+    "39019425dcf190fe963b5ee0e72beed3f15579a8"
+  ]
+}

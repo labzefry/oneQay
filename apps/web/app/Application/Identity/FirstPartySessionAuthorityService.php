@@ -36,6 +36,36 @@ final readonly class FirstPartySessionAuthorityService
         ?int $factorEpoch,
         string $correlationId,
     ): IssuedFirstPartySessionAuthority {
+        return $this->issueAuthority($tenantId, $identityId, $organizationId, $outletId, $deviceId, $credentialEpoch, $factorEpoch, $correlationId, false);
+    }
+
+    public function issuePersistentDesktop(
+        TenantId $tenantId,
+        PlatformIdentityId $identityId,
+        string $organizationId,
+        ?string $outletId,
+        ?string $deviceId,
+        int $credentialEpoch,
+        ?int $factorEpoch,
+        string $correlationId,
+    ): IssuedFirstPartySessionAuthority {
+        if ($outletId === null || $deviceId === null || PHP_INT_SIZE < 8 || !($this->repository instanceof PersistentDesktopSessionAuthorityRepository)) {
+            $this->invalidState();
+        }
+        return $this->issueAuthority($tenantId, $identityId, $organizationId, $outletId, $deviceId, $credentialEpoch, $factorEpoch, $correlationId, true);
+    }
+
+    private function issueAuthority(
+        TenantId $tenantId,
+        PlatformIdentityId $identityId,
+        string $organizationId,
+        ?string $outletId,
+        ?string $deviceId,
+        int $credentialEpoch,
+        ?int $factorEpoch,
+        string $correlationId,
+        bool $persistentDesktop,
+    ): IssuedFirstPartySessionAuthority {
         $this->assertConfigured();
         $now = $this->now();
         $this->assertCurrentEpochs($tenantId, $identityId, $credentialEpoch, $factorEpoch);
@@ -55,7 +85,7 @@ final readonly class FirstPartySessionAuthorityService
             $this->invalidState();
         }
 
-        return $this->repository->issue(
+        return $this->repository->{($persistentDesktop ? 'issuePersistentDesktop' : 'issue')}(
             $tenantId,
             $identityId,
             $organizationId,
@@ -66,7 +96,7 @@ final readonly class FirstPartySessionAuthorityService
             $authorityId,
             $publicHandle,
             $now,
-            $this->effectiveExpiry($now, $now),
+            $persistentDesktop ? PHP_INT_MAX : $this->effectiveExpiry($now, $now),
             $correlationId,
         );
     }
@@ -81,10 +111,37 @@ final readonly class FirstPartySessionAuthorityService
         mixed $sessionCredentialEpoch,
         mixed $sessionFactorEpoch,
     ): void {
+        $this->assertCurrent($tenantId, $identityId, $authorityId, $organizationId, $outletId, $deviceId, $sessionCredentialEpoch, $sessionFactorEpoch, false);
+    }
+
+    public function assertPersistentDesktopCurrent(
+        TenantId $tenantId,
+        PlatformIdentityId $identityId,
+        string $authorityId,
+        string $organizationId,
+        ?string $outletId,
+        ?string $deviceId,
+        mixed $sessionCredentialEpoch,
+        mixed $sessionFactorEpoch,
+    ): void {
+        $this->assertCurrent($tenantId, $identityId, $authorityId, $organizationId, $outletId, $deviceId, $sessionCredentialEpoch, $sessionFactorEpoch, true);
+    }
+
+    private function assertCurrent(
+        TenantId $tenantId,
+        PlatformIdentityId $identityId,
+        string $authorityId,
+        string $organizationId,
+        ?string $outletId,
+        ?string $deviceId,
+        mixed $sessionCredentialEpoch,
+        mixed $sessionFactorEpoch,
+        bool $persistentDesktop,
+    ): void {
         $this->assertConfigured();
         $this->assertAuthorityId($authorityId);
         $record = $this->repository->ownedByAuthorityId($tenantId, $identityId, $authorityId);
-        if ($record === null) {
+        if ($record === null || (($record['authority_kind'] ?? 'browser') === 'desktop_persistent') !== $persistentDesktop) {
             $this->authorityDenied();
         }
 
@@ -100,11 +157,12 @@ final readonly class FirstPartySessionAuthorityService
             $sessionCredentialEpoch,
             $sessionFactorEpoch,
             $now,
+            $persistentDesktop,
         );
 
         $lastSeen = $this->recordInt($record, 'last_seen_at_unix');
         if (($now - $lastSeen) >= self::TOUCH_INTERVAL_SECONDS) {
-            $effectiveExpiry = $this->effectiveExpiry($this->recordInt($record, 'issued_at_unix'), $now);
+            $effectiveExpiry = $persistentDesktop ? PHP_INT_MAX : $this->effectiveExpiry($this->recordInt($record, 'issued_at_unix'), $now);
             if ($effectiveExpiry > $now) {
                 $this->repository->touch(
                     $tenantId,
@@ -143,7 +201,7 @@ final readonly class FirstPartySessionAuthorityService
         $items = [];
         foreach ($this->repository->activeOwned($tenantId, $identityId, $now) as $record) {
             try {
-                $this->assertRecordFreshForOwner($record, $tenantId, $identityId, $now);
+                $this->assertRecordFreshForOwner($record, $tenantId, $identityId, $now, true);
             } catch (FirstPartySessionAuthorityViolation) {
                 continue;
             }
@@ -157,10 +215,11 @@ final readonly class FirstPartySessionAuthorityService
                 $this->recordNullableString($record, 'device_id'),
                 $issuedAtUnix,
                 $this->recordInt($record, 'last_seen_at_unix'),
-                min(
+                ($record['authority_kind'] ?? 'browser') === 'desktop_persistent' ? PHP_INT_MAX : min(
                     $this->recordInt($record, 'expires_at_unix'),
                     $this->absoluteDeadline($issuedAtUnix),
                 ),
+                ($record['authority_kind'] ?? 'browser') === 'desktop_persistent',
             );
         }
 
@@ -212,7 +271,7 @@ final readonly class FirstPartySessionAuthorityService
         }
 
         try {
-            $this->assertRecordFreshForOwner($record, $tenantId, $identityId, $this->now());
+            $this->assertRecordFreshForOwner($record, $tenantId, $identityId, $this->now(), true);
         } catch (FirstPartySessionAuthorityViolation) {
             return;
         }
@@ -323,6 +382,7 @@ final readonly class FirstPartySessionAuthorityService
         mixed $sessionCredentialEpoch,
         mixed $sessionFactorEpoch,
         int $now,
+        bool $persistentDesktop = false,
     ): void {
         if (! hash_equals($authorityId, $this->recordString($record, 'authority_id'))
             || ! hash_equals($organizationId, $this->recordString($record, 'organization_id'))
@@ -338,7 +398,7 @@ final readonly class FirstPartySessionAuthorityService
             $this->authorityDenied();
         }
 
-        $this->assertRecordFreshForOwner($record, $tenantId, $identityId, $now);
+        $this->assertRecordFreshForOwner($record, $tenantId, $identityId, $now, $persistentDesktop);
     }
 
     /** @param array<string,mixed> $record */
@@ -347,12 +407,20 @@ final readonly class FirstPartySessionAuthorityService
         TenantId $tenantId,
         PlatformIdentityId $identityId,
         int $now,
+        bool $allowDesktop = false,
     ): void {
+        $kind = $record['authority_kind'] ?? 'browser';
+        $persistent = $kind === 'desktop_persistent';
+        if (!in_array($kind, ['browser', 'desktop_persistent'], true)
+            || ($persistent && (!$allowDesktop || $this->recordInt($record, 'expires_at_unix') !== PHP_INT_MAX
+                || $this->recordNullableString($record, 'outlet_id') === null || $this->recordNullableString($record, 'device_id') === null))) {
+            $this->authorityDenied();
+        }
         $issuedAtUnix = $this->recordInt($record, 'issued_at_unix');
         if (($record['revoked_at_unix'] ?? null) !== null
             || $now < $issuedAtUnix
             || $now > $this->recordInt($record, 'expires_at_unix')
-            || $now > $this->absoluteDeadline($issuedAtUnix)) {
+            || (!$persistent && $now > $this->absoluteDeadline($issuedAtUnix))) {
             $this->authorityDenied();
         }
 
