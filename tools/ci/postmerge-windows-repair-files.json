@@ -1,0 +1,58 @@
+{
+  ".github/workflows/sprint253-final-shift-close-post-activation-historical-regression-successor-compatibility.yml": [
+    "M",
+    "6164fbf011d5fbf90dd519af3bc15650a728615a"
+  ],
+  ".github/workflows/sprint268-dependency-security-remediation-regression.yml": [
+    "M",
+    "a8c59cdb80a8d501174e3d18385a5fb092abd3da"
+  ],
+  ".github/workflows/sprint35-privileged-totp-recovery-regression.yml": [
+    "M",
+    "1a6f1218af45621a40a7f3029435d5158d1bb5d4"
+  ],
+  ".github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml": [
+    "M",
+    "a4e168d8d1702cb5633492696bf287057145c9d0"
+  ],
+  ".github/workflows/sprint37-first-party-all-session-termination-regression.yml": [
+    "M",
+    "b8ef1c5f23e47ea1bffbbcdc92783e1a0ea91ddb"
+  ],
+  ".github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml": [
+    "M",
+    "67597c4279d10815d7770f82233078c56ee53f9a"
+  ],
+  ".github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml": [
+    "M",
+    "b9b3d299144fc2ba8b3e92a27d8fb0376b578ce2"
+  ],
+  "CHANGELOG.md": [
+    "M",
+    "2edc5d8bf67ea4f39e4182d555822995ee593c8f"
+  ],
+  "PROJECT_MANIFEST.md": [
+    "M",
+    "2b4d4cbe2630c7a587d29d97002ebf4e6303202e"
+  ],
+  "TASKS.md": [
+    "M",
+    "0a43a64aae1f1845ffcc4727595cc5c85b32ea46"
+  ],
+  "TESTING.md": [
+    "M",
+    "e2665063346e33cf984f509850e944269a38876b"
+  ],
+  "docs/operations/WINDOWS_POS_PERSISTENT_SESSION_2026-11-05.md": [
+    "M",
+    "dedb430a6c9fc0de9bbacb35a8a547d286ae85cf"
+  ],
+  "tools/ci/sprint253-successor-compatibility.sh": [
+    "M",
+    "c4c5ad09073c82cdcd1985510862f5d427df3e81"
+  ],
+  "tools/ci/test-sprint253-certified-merge.py": [
+    "A",
+    "6e7f5590e779c05cf7a84dbdb8da962edfaa785a"
+  ]
+}

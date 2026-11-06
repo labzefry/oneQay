@@ -122,6 +122,14 @@ head_ref = os.environ.get('PR_HEAD_REF', '')
 if not base or not head or set(base) == {'0'}:
     raise SystemExit('Unable to resolve bounded comparison range.')
 
+ci_only_windows_repair = False
+if ((os.environ.get('GITHUB_EVENT_NAME') == 'pull_request'
+     and head_ref == 'fix/postmerge-windows-release-20261106')
+    or (os.environ.get('GITHUB_EVENT_NAME') == 'push'
+        and base == 'f628b946c2a369317f041f5da63b3f534b0c852b' and head != base)):
+    subprocess.run(['python3', 'tools/ci/verify-postmerge-windows-repair.py'], check=True)
+    ci_only_windows_repair = True
+
 changed = subprocess.check_output(
     ['git', 'diff', '--name-only', base, head], text=True
 ).splitlines()
@@ -139,6 +147,38 @@ workflows = [
     and not Path(p).name.startswith('sprint253-')
     and Path(p).exists()
 ]
+# The PR996 squash was independently reviewed and passed 141 exact-head runs.
+# Recognize only that immutable push; retain every operational/stale-state scan.
+certified_windows_push = False
+if base == '5ab9b673437eca9501657f395f329610266ee7bb' and head == 'f628b946c2a369317f041f5da63b3f534b0c852b':
+    if not (
+        os.environ.get('GITHUB_EVENT_NAME') == 'push'
+        and os.environ.get('GITHUB_REPOSITORY') == 'labzefry/oneQay'
+        and os.environ.get('GITHUB_REF') == 'refs/heads/main'
+        and os.environ.get('GITHUB_SHA') == head
+        and os.environ.get('SPRINT253_CONTEXT_9') == head
+        and not os.environ.get('PR_HEAD_SHA')
+    ):
+        raise SystemExit('SPRINT253_CERTIFIED_WINDOWS_PUSH_CONTEXT_INVALID')
+    tree = subprocess.check_output(['git', 'rev-parse', head + '^{tree}'], text=True).strip()
+    if tree != 'd91be372d5d50ef643f5ff3f17f4a1ef8d75fa4d':
+        raise SystemExit('SPRINT253_CERTIFIED_WINDOWS_TREE_INVALID')
+    approved_workflows = [Path(p) for p in changed
+        if p.startswith('.github/workflows/sprint') and p.endswith('.yml')
+        and not Path(p).name.startswith('sprint253-')]
+    for path in approved_workflows:
+        # Missing files must fail explicitly rather than disappearing from workflows.
+        if not path.is_file() or path.is_symlink() or path.stat().st_mode & 0o111:
+            raise SystemExit('SPRINT253_CERTIFIED_WINDOWS_WORKTREE_INVALID: ' + str(path))
+        row = subprocess.check_output(['git', 'ls-tree', head, '--', str(path)], text=True).strip()
+        meta, name = row.split('\t')
+        mode, kind, blob = meta.split()
+        working = subprocess.check_output(['git', 'hash-object', '--', str(path)], text=True).strip()
+        if name != str(path) or mode != '100644' or kind != 'blob' or working != blob:
+            raise SystemExit('SPRINT253_CERTIFIED_WINDOWS_BLOB_INVALID: ' + str(path))
+    certified_windows_push = True
+    print(f'SPRINT253_CERTIFIED_WINDOWS_PUSH_OK workflows={len(approved_workflows)}')
+
 if not workflows:
     print('SPRINT253_SUCCESSOR_COMPATIBILITY_OK workflows=0')
 
@@ -240,7 +280,7 @@ for path in sorted(workflows):
             and 'python3 tools/ci/verify-menu-successor.py' in chr(10).join(lines)
             and (menu_explicit_guard or menu_preserved_classifier)
         )
-        if full_pr_diff and exact_global_lock and not sprint264_bounded_compat and not sprint268_bounded_compat and not menu_bounded_compat:
+        if full_pr_diff and exact_global_lock and not sprint264_bounded_compat and not sprint268_bounded_compat and not menu_bounded_compat and not certified_windows_push and not ci_only_windows_repair:
             offenders.append(f'{path}:exact full-PR historical envelope lock')
 
 if offenders:

@@ -116,6 +116,10 @@ jobs:
           cancel_batch in_progress 40
           cancel_batch queued 930
 
+      - name: Verify immutable merged-Windows source classification and rejection cases
+        shell: bash
+        run: python3 tools/ci/test-sprint253-certified-merge.py
+
       - name: Prove bounded current-state successor compatibility
         # The immutable #934 squash c874ab73 was accepted by 158 exact-head PR checks.
         # Only its one-time push event is excluded from obsolete historical PR-envelope analysis;

@@ -1,6 +1,6 @@
 # Windows POS 0.2.8 candidate — persistent cashier sign-in and local screen lock
 
-Status: implementation candidate; not merged, deployed or published. Initial exact-head CI on96f51ef passed Windows compilation/DPAPI tests, web/desktop/service UI, SQLite and MySQL persistent-session regressions (98 assertions each), release certification and security checks. This continuation repairs newly triggered historical CI envelopes and fixtures; final repaired-head CI and independent review remain required. Never advertise an installer until the signed release and compatible deployed API are verified.
+Status (2026-11-06): PR #996 merged via squash to mainf628b946c2a369317f041f5da63b3f534b0c852b; merged tree exactly matches the independently reviewed treed91be372d5d50ef643f5ff3f17f4a1ef8d75fa4d. All141 exact-head PR Actions and Product Owner authority passed. Backend hosting deployment and signed Windows0.2.8 publication have not occurred. The postmerge build produced certified web/release artifacts; the historical compatibility scanner requires the bounded recognition recorded below, and signed Windows publication remains blocked by its unchanged deployed-API verification.
 
 ## User outcome and scope
 
@@ -72,3 +72,34 @@ The follow-up excludes only the reviewed console file or two reviewed authority 
 
 
 Follow-up validation: all18 previously failing GitHub run-step bodies replayed locally with the actual PR996 event and declared workflow environments:18 PASS,0 FAIL. This includes complete final-shift operational assertions, HTTP/audit contract guards, ordinary-auth/enrollment flows and the combined Preview qualification suite. Separate ordinary-auth tests passed with a true Preview flag in their parent environment, and actual Preview interaction passed with Preview explicitly true. Exact source positive verification and12 negative mutation/event cases passed;425 modified-workflow shell blocks parsed without errors. This is local rehearsal evidence; fresh exact-head GitHub Actions are still required.
+
+
+## Merged release handoff (2026-11-06)
+
+PR996 is merged; source isf628b946c2a369317f041f5da63b3f534b0c852b, tree isd91be372d5d50ef643f5ff3f17f4a1ef8d75fa4d. Postmerge18 runs completed:16 passed, including Production Business Release Certification and Production Release Candidate Publication. Sprint253 misclassified preserved historical full-PR guards because the PR-specific source proof was no longer active during the main push. The repair recognizes only the exact5ab→f628 push tuple, internal repository/main ref/SHA, immutable reviewed tree and byte/mode-identical workflow files. It exempts only that old full-PR-lock diagnostic; stale activation/migration/permission/fingerprint scans and the later operational assertions remain active. Wrong contexts and changed/missing/symlink/executable workflow files fail closed.
+
+The Windows release stopped at `Require compatible deployed native API before publishing the update`: the HTTPS capabilities request received a Cloudflare managed-challenge HTML response. No signed release/stable updater publication is claimed. Do not weaken this gate, publish before compatible backend activation, disable Cloudflare protection globally, or expose private hosting credentials. During authorized hosting rollout, verify the exact compatible backend and additive migration, investigate Cloudflare policy for legitimate native API traffic, and rerun signed publication only once public capabilities returns the correct JSON/source. Preserve existing updater trust, business data, receipts and current published version until then.
+
+Continue after the narrowly scoped CI repair PR passes and is merged. Prepare the certified backend/operator for the final main source; request fresh cPanel login only when deployment is actually ready. Pause whenever Actions queues, as requested by the Product Owner. No SQL reset or mutation of unrelated tenants is authorized by this handoff.
+
+
+Local validation of the postmerge classifier repair: six regression test methods PASS in a disposable worktree; Sprint253 YAML parses, all five run blocks pass Bash syntax and size limits, and `git diff --check` passes. No application, migration, signed-release workflow or operational-state file changed. Independent source review and fresh PR Actions are required before this CI repair merges; deployment and signed publication remain pending.
+
+
+## PR997 exact-source continuation
+
+The initialb9635a72 candidate completed100 Actions runs:96 passed and4 rejected the CI-only changed-path set (Sprint35/36/37 and Sprint268 historical source envelopes). The follow-up source proof pins PR997/internal branch/basef628, or its one-time squash push fromf628 on main, and exactly16 owned CI/documentation paths with status/mode/blob/worktree binding. All other committed paths, application/dependency/runtime worktrees and operational state remain frozen; hidden assume-unchanged runtime drift is rejected. The new proof selects the existing isolated Sprint35/36/37/TOTP fixtures and replaces only old whole-PR path classification. Dependency floors, advisory checks, full application regressions and operational assertions remain active. Sprint253 continues its stale-state scan and exempts only the old full-PR diagnostic after this proof, including after squash.
+
+Ten local regression methods PASS, including real Git CI-only fixtures and rejection of runtime-only pushes with zero Sprint workflow changes. Existing frozen TOTP/session fixtures are replayed separately; no original fixture or historical runner changed. All64 run blocks in the five affected workflows parse and meet size limits. Fresh exact-head PR checks, final independent review and merge remain required before hosting deployment; the Cloudflare/API and signed-publication handoff above remains unchanged.
+
+
+Final local PR997 repair evidence: the four mandatory source-proof steps, preserved current-base fixture hashes, dependency floors/migration history and operational assertions passed in12 executed workflow bodies. Sixteen fixture/source-path routing conditions were checked under the actual PR997 job environments. Existing isolated Sprint35 recovery, Sprint30 MFA, Sprint36 inventory/revocation and Sprint37 all-session termination fixtures each produced their original PASS marker. The real Sprint253 scanner accepted both the PR997 candidate and its simulated squash push fromf628, while negative tests rejected app-only pushes with no Sprint workflow changes. These are local rehearsals; the next exact-head Actions must pass before merge/deployment.
+
+
+Workflow dependency closure: candidate3015c58 completed102 runs; only the newly triggered Sprint38/39 source envelopes failed. The full283-workflow PR/path graph was evaluated before the final change: adding these two workflow paths triggers no additional workflows (100 distinct PR workflows both before and after). Independent review confirmed that closure. The source whitelist is now16 owned paths. Sprint38/39 require the same runtime-frozen proof before replacing obsolete full-PR/#1–13 source-envelope checks; their actual absolute-lifetime/access-revalidation and dependent session regressions run through the unchanged isolated fixtures. HTTP/audit checks, fixed TTLs, lint, full application checks, protected runtime boundaries and source cleanliness remain active. No application or migration file is changed or removed in the caller's checkout.
+
+
+Closure rehearsal: ten regression methods PASS with the16-path proof, and the original isolated Sprint38 absolute-lifetime and Sprint39 organizational-access-revalidation fixtures both produced their original PASS markers. The two workflow YAMLs and all42 contained run blocks pass Bash syntax/size validation. Scope remains CI/documentation only; fresh exact-head Actions and final independent review remain required.
+
+
+Final closure validation:12 always-on Sprint38/39 workflow bodies passed under the actual PR997 environment, including strict source proof, HTTP/audit preservation, fixed TTLs, request-time wiring, immutable fixtures, protected boundaries and source cleanliness. Sixteen source/fixture-routing conditions were verified. Both full Sprint253 paths (PR997 and its simulated one-time main squash push) passed while scanning all six changed historical workflows. This adds no further workflow trigger beyond the already observed dependency closure. Fresh exact-head Actions are still required.
