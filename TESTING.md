@@ -2,7 +2,7 @@
 
 Run `python3 tools/ci/test-sprint253-certified-merge.py` from a checkout with the retained PR996 merge and its base objects available. Sprint253 runs this automatically after its full-history checkout. The suite creates and removes a disposable worktree at the immutable merge, copies only the current scanner into it, and exercises the real Git/file/event proof. Future legitimate workflow edits therefore do not invalidate the historical regression or alter the caller's files.
 
-The same suite also creates a real Git CI-only fixture from the current 14 owned inputs at the frozen application baseline. It verifies PR997 and squash-push proof, rejects foreign or stale contexts, owned-file changes and hidden runtime drift, and rejects an app-only push even when no Sprint workflow changed.
+The same suite also creates a real Git CI-only fixture from the current 16 owned inputs at the frozen application baseline. It verifies PR997 and squash-push proof, rejects foreign or stale contexts, owned-file changes and hidden runtime drift, and rejects an app-only push even when no Sprint workflow changed.
 
 Coverage includes the exact certified push, incorrect repository/ref/event/base/head/tree, changed/missing/symlink/executable workflow files, stale operational diagnostics after successful source proof, and unrelated zero-workflow ranges without the exception. Application code, databases, signed-release prerequisites and production configuration are not changed by these tests.
 

@@ -23,6 +23,8 @@ ALLOWED = {
     '.github/workflows/sprint35-privileged-totp-recovery-regression.yml',
     '.github/workflows/sprint36-first-party-session-inventory-revocation-regression.yml',
     '.github/workflows/sprint37-first-party-all-session-termination-regression.yml',
+    '.github/workflows/sprint38-first-party-session-absolute-lifetime-regression.yml',
+    '.github/workflows/sprint39-first-party-session-organizational-access-revalidation-regression.yml',
     '.github/workflows/sprint268-dependency-security-remediation-regression.yml',
 }
 
