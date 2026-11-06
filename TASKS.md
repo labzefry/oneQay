@@ -1,3 +1,7 @@
+## 2026-11-06 — PR996 merged; deployment handoff
+
+Windows 0.2.8 native persistent sign-in and lock controls merged in PR #996 at `f628b946` (reviewed tree preserved; 141 exact-head PR runs and owner authority passed). Postmerge web certification/publication succeeded. A narrowly scoped historical-CI source classifier repair is in progress; signed Windows publication correctly stopped at public API verification because Cloudflare returned a managed challenge. Hosted backend activation and the signed Windows update remain pending. See [source, validation and deployment handoff](docs/operations/WINDOWS_POS_PERSISTENT_SESSION_2026-11-05.md).
+
 ## 2026-11-05 — Windows POS 0.2.8 candidate: persistent cashier login and lock controls
 
 Adds a native-only persistent session kind, protected account restoration across app close, explicit durable logout/revocation, and per-cashier local automatic lock (off / 1 / 2 / 5 / 10 / 15 / 30 minutes). Packages the existing shared QR/member cashier UI in the next Windows version. Browser TTL, tenant/RBAC/TOTP revocation and bounded offline transaction leases remain enforced. **Not yet merged/deployed/published. Initial Windows/DPAPI, SQLite/MySQL and UI CI passed; historical-check compatibility repairs require new exact-head CI and final independent review.** [Contract, threat model, tests and rollout](docs/operations/WINDOWS_POS_PERSISTENT_SESSION_2026-11-05.md).

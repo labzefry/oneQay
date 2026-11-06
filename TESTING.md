@@ -1,3 +1,9 @@
+## 2026-11-06 — Certified merge compatibility regression
+
+Run `python3 tools/ci/test-sprint253-certified-merge.py` from a checkout with the retained PR996 merge and its base objects available. Sprint253 runs this automatically after its full-history checkout. The suite creates and removes a disposable worktree at the immutable merge, copies only the current scanner into it, and exercises the real Git/file/event proof. Future legitimate workflow edits therefore do not invalidate the historical regression or alter the caller's files.
+
+Coverage includes the exact certified push, incorrect repository/ref/event/base/head/tree, changed/missing/symlink/executable workflow files, stale operational diagnostics after successful source proof, and unrelated zero-workflow ranges without the exception. Application code, databases, signed-release prerequisites and production configuration are not changed by these tests.
+
 ## 2026-11-05 — Windows POS 0.2.8 candidate: persistent cashier login and lock controls
 
 Adds a native-only persistent session kind, protected account restoration across app close, explicit durable logout/revocation, and per-cashier local automatic lock (off / 1 / 2 / 5 / 10 / 15 / 30 minutes). Packages the existing shared QR/member cashier UI in the next Windows version. Browser TTL, tenant/RBAC/TOTP revocation and bounded offline transaction leases remain enforced. **Not yet merged/deployed/published; exact-head CI and independent implementation review pending.** [Contract, threat model, tests and rollout](docs/operations/WINDOWS_POS_PERSISTENT_SESSION_2026-11-05.md).
