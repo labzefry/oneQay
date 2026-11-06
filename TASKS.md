@@ -2,6 +2,8 @@
 
 Adds a native-only persistent session kind, protected account restoration across app close, explicit durable logout/revocation, and per-cashier local automatic lock (off / 1 / 2 / 5 / 10 / 15 / 30 minutes). Packages the existing shared QR/member cashier UI in the next Windows version. Browser TTL, tenant/RBAC/TOTP revocation and bounded offline transaction leases remain enforced. **Not yet merged/deployed/published. Initial Windows/DPAPI, SQLite/MySQL and UI CI passed; historical-check compatibility repairs require new exact-head CI and final independent review.** [Contract, threat model, tests and rollout](docs/operations/WINDOWS_POS_PERSISTENT_SESSION_2026-11-05.md).
 
+CI continuation (2026-11-06): d78e818 completed136 workflows (118 passed,18 failed). The remaining narrowly scoped historical contracts and Preview/ordinary-auth fixture mode were repaired; all18 failed step bodies now replay PASS locally. Fresh exact-head CI, merge, hosted deployment and signed Windows publication remain pending. Original security/transaction regressions and operational state are preserved.
+
 ## 2026-10-29 — Menu media lifecycle and MIME patch (PR #992 draft)
 
 ## 2026-11-04 — Shared QR cashier and membership enrollment (source candidate)

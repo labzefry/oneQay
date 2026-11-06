@@ -678,7 +678,7 @@ jobs:
           fi
           php tests/first-party-session-establishment.php
           if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
-            (cd ../.. && python3 tools/ci/verify-windows-pos-successor.py && bash tools/ci/run-historical-fixture.sh s28) || exit $?
+            (cd ../.. && python3 tools/ci/verify-windows-pos-successor.py && bash tools/ci/run-desktop-historical-fixture.sh s28) || exit $?
           else
             php tests/initial-password-enrollment.php
           fi

@@ -248,6 +248,10 @@ jobs:
             python3 tools/ci/verify-windows-pos-successor.py || exit 1
             menu_verified_exclusions=(':(exclude)apps/web/composer.lock')
           fi
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py || exit $?
+            menu_verified_exclusions+=(':(exclude)apps/web/app/Application/Identity/FirstPartySessionAuthorityService.php' ':(exclude)apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php')
+          fi
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"

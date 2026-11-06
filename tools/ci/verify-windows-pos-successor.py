@@ -61,6 +61,7 @@ def verify():
         'apps/web/database/migrations', 'apps/web/tests/run.php',
         'apps/web/tests/privileged-totp-mfa.php',
         'apps/web/tests/identity-credential-verification.php',
+        'apps/web/tests/policy-administration-delivery.php',
         'apps/web/tests/first-control-principal-credential-bootstrap.php',
         'apps/web/tests/initial-password-enrollment.php',
         'apps/web/tests/initial-password-enrollment-current.php',

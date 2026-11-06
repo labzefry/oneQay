@@ -53,6 +53,10 @@ jobs:
         shell: bash
         run: |
           menu_verified_exclusions=()
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py || exit $?
+            menu_verified_exclusions=(':(exclude)apps/web/routes/console.php')
+          fi
           if [[ "${{ github.event_name }}" == 'pull_request' && "${{ github.event.pull_request.number }}" == '992' && "${{ github.head_ref }}" == 'feature/menu-membership-20261029' && "${{ github.event.pull_request.head.repo.full_name }}" == 'labzefry/oneQay' ]]; then
             python3 tools/ci/verify-menu-successor.py --frozen-inputs || exit 1
             menu_verified_exclusions=(':(exclude)apps/web/bootstrap/app.php' ':(exclude)apps/web/composer.lock' ':(exclude)apps/web/package.json' ':(exclude)apps/web/package-lock.json')

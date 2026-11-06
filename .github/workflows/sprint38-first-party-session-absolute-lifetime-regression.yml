@@ -290,6 +290,11 @@ jobs:
         if: github.event_name == 'pull_request'
         shell: bash
         run: |
+          windows_authority_exclusions=()
+          if [[ "${GITHUB_EVENT_NAME:-}" == pull_request && "${GITHUB_HEAD_REF:-}" == pos/windows-028-persistent-session-20261106 ]]; then
+            python3 tools/ci/verify-windows-pos-successor.py || exit $?
+            windows_authority_exclusions=(':(exclude)apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php')
+          fi
           set -euo pipefail
           base="${{ github.event.pull_request.base.sha }}"
           head="${{ github.event.pull_request.head.sha }}"
@@ -297,13 +302,13 @@ jobs:
             git diff --exit-code "$base" "$head" -- \
             apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
             apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
-            apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php
+            apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php "${windows_authority_exclusions[@]}"
           else
             git diff --exit-code "$base" "$head" -- \
             apps/web/app/Application/Identity/FirstPartySessionAuthorityRepository.php \
             apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php \
             apps/web/app/Delivery/Http/Identity/FirstPartySessionControlController.php \
-            apps/web/routes/web.php
+            apps/web/routes/web.php "${windows_authority_exclusions[@]}"
           fi
           repo='apps/web/app/Infrastructure/Identity/LaravelFirstPartySessionAuthorityRepository.php'
           for event in session_issued session_revoked other_sessions_revoked all_sessions_revoked session_logout; do

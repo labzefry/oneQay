@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
-# Author by Lab | zefry. Current application with immutable Sprint26/29 fixtures at their original migration horizon.
+# Author by Lab | zefry. Current ordinary-auth implementation with governed disposable migration horizons.
 # The existing historical runner is intentionally unchanged.
 set -euo pipefail
+if [[ "${1:-}" == s28 ]]; then
+  exec env ONEQAY_TECHNICAL_PREVIEW_ENABLED=false bash "$(dirname "$0")/run-historical-fixture.sh" s28
+fi
 case "${1:-}" in
+  s25) horizon=27; test_file='policy-administration-delivery.php'; marker='Sprint 25 ordinary policy administration delivery regression passed with Sprint 28 schema preservation.' ;;
+  s27) horizon=27; test_file='first-party-session-establishment.php'; marker='Sprint 27 first-party session establishment regression passed.' ;;
   s26) horizon=9; test_file='identity-credential-verification.php'; marker='Sprint 26 identity credential verification regression passed.' ;;
   s29) horizon=14; test_file='first-control-principal-credential-bootstrap-current.php'; marker='Sprint 29 first control principal credential bootstrap regression passed.' ;;
   *) printf '%s\n' 'DESKTOP_HISTORICAL_FIXTURE_ID_INVALID' >&2; exit 2 ;;
@@ -31,6 +36,6 @@ done
 (( count == horizon )) || { echo 'HISTORICAL_FIXTURE_MIGRATION_COUNT_INVALID' >&2; exit 2; }
 (
   cd "$work/repo/apps/web"
-  timeout 180 php "tests/$test_file" 2>&1 | tee "$work/output.log"
+  ONEQAY_TECHNICAL_PREVIEW_ENABLED=false timeout 180 php "tests/$test_file" 2>&1 | tee "$work/output.log"
 )
 grep -Fxq "$marker" "$work/output.log" || { echo 'HISTORICAL_REGRESSION_MISSING_PASS_MARKER' >&2; exit 1; }

@@ -97,7 +97,7 @@ jobs:
       - run: REQUIRE_MENU_GD=1 php apps/web/tests/cashier-membership-qr.php
       - run: REQUIRE_MENU_GD=1 PLATFORM_TEST_ENGINE=mysql php apps/web/tests/cashier-membership-qr.php
       - run: php apps/web/tests/enrollment-transaction-rollback.php
-      - run: bash tools/ci/run-historical-fixture.sh s28
+      - run: bash tools/ci/run-desktop-historical-fixture.sh s28
       - run: php apps/web/tests/loyalty-math.php
       - run: php apps/web/tests/loyalty-lots.php
       - run: php apps/web/tests/mime-header-security.php
